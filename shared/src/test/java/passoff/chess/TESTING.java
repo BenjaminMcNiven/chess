@@ -9,12 +9,12 @@ public class TESTING {
     public static void main(String[] args){
         ChessBoard board=new ChessBoard();
         board.clearBoard();
-        board.addPiece(new ChessPosition(7,2),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.PAWN));
-        board.addPiece(new ChessPosition(8,1),new ChessPiece(ChessGame.TeamColor.BLACK,ChessPiece.PieceType.ROOK));
+        board.addPiece(new ChessPosition(8,3),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.PAWN));
+        board.addPiece(new ChessPosition(7,3),new ChessPiece(ChessGame.TeamColor.BLACK,ChessPiece.PieceType.ROOK));
 
         System.out.println(board);
 
-        System.out.println(board.getPiece(new ChessPosition(7,2)).pieceMoves(board,new ChessPosition(7,2)));
+        System.out.println(board.getPiece(new ChessPosition(7,3)).pieceMoves(board,new ChessPosition(7,3)));
     }
 }
 //        BLACK
