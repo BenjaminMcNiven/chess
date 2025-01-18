@@ -10,5 +10,4 @@ public class QueenCalculator extends MoveCalculator{
         moves.addAll(new BishopCalculator().pieceMoves(board,position));
         return moves;
     }
-
 }

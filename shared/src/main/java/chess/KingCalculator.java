@@ -44,5 +44,4 @@ public class KingCalculator extends MoveCalculator{
         }
         return moves;
     }
-
 }

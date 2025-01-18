@@ -17,7 +17,7 @@ public class BishopCalculator extends MoveCalculator{
         return moves;
     }
 
-    public Collection<ChessMove> iterateMoves(ChessBoard board, ChessPosition position, int row,int col) {
+    public Collection<ChessMove> iterateMoves(ChessBoard board, ChessPosition position, int row, int col) {
         Collection<ChessMove> moves = new ArrayList<>();
         for (int i = 1; i <= 8; i++) {
             ChessPosition newPos = new ChessPosition(position.getRow() + i * row, position.getColumn() + i * col);
