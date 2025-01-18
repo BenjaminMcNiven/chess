@@ -20,13 +20,13 @@ public class BishopCalculator extends MoveCalculator{
     public Collection<ChessMove> iterateMoves(ChessBoard board, ChessPosition position, int row,int col) {
         Collection<ChessMove> moves = new ArrayList<>();
         for (int i = 1; i <= 8; i++) {
-            ChessPosition newPosition = new ChessPosition(position.getRow() + i * row, position.getColumn() + i * col);
-            if (board.inBounds(newPosition)) {
-                if (board.getPiece(newPosition) == null) {
-                    moves.add(new ChessMove(position, newPosition));
+            ChessPosition newPos = new ChessPosition(position.getRow() + i * row, position.getColumn() + i * col);
+            if (board.inBounds(newPos)) {
+                if (board.getPiece(newPos) == null) {
+                    moves.add(new ChessMove(position, newPos));
                 } else {
-                    if (board.getPiece(newPosition).getTeamColor() != board.getPiece(position).getTeamColor()) {
-                        moves.add(new ChessMove(position, newPosition));
+                    if (board.getPiece(newPos).getTeamColor() != board.getPiece(position).getTeamColor()) {
+                        moves.add(new ChessMove(position, newPos));
                     }
                     return moves;
                 }
