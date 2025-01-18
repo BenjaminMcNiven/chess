@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public class ChessPosition {
 
-    private int row, col;
+    private final int row, col;
 
     public ChessPosition(int row, int col) {
         this.row=row;
@@ -45,5 +45,10 @@ public class ChessPosition {
     @Override
     public int hashCode() {
         return Objects.hash(row, col);
+    }
+
+    @Override
+    public String toString(){
+        return "("+row+","+col+")";
     }
 }

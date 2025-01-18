@@ -29,7 +29,7 @@ public class ChessBoard {
     }
 
     public boolean inBounds(ChessPosition position){
-        return 1<=position.getRow() && position.getRow()<=8 && 1<=position.getColumn() && position.getColumn()<=8;
+        return position.getRow()>=1 && position.getRow()<=8 && position.getColumn()>=1 && position.getColumn()<=8;
     }
     /**
      * Gets a chess piece on the chessboard

@@ -8,7 +8,7 @@ import chess.ChessPosition;
 public class TESTING {
     public static void main(String[] args){
         ChessBoard board=new ChessBoard();
-        board.addPiece(new ChessPosition(8,3),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.KING));
+        board.addPiece(new ChessPosition(8,3),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.BISHOP));
         board.addPiece(new ChessPosition(7,3),new ChessPiece(ChessGame.TeamColor.WHITE,ChessPiece.PieceType.PAWN));
 
         System.out.println(board);
