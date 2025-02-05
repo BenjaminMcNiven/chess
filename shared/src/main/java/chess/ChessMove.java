@@ -1,7 +1,5 @@
 package chess;
 
-import java.util.Objects;
-
 /**
  * Represents moving a chess piece on a chessboard
  * <p>
@@ -10,19 +8,20 @@ import java.util.Objects;
  */
 public class ChessMove {
 
-    public ChessPosition start,end;
-    public ChessPiece.PieceType promotionPiece;
+    private final ChessPosition start,end;
+    private final ChessPiece.PieceType promotion;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         start=startPosition;
         end=endPosition;
-        this.promotionPiece=promotionPiece;
+        promotion=promotionPiece;
     }
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition) {
         start=startPosition;
         end=endPosition;
+        promotion=null;
     }
 
     /**
@@ -46,24 +45,30 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece;
+        return promotion;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
+    public boolean equals(Object obj){
+        if(obj==null){
             return false;
         }
-        ChessMove chessMove = (ChessMove) o;
-        return start.equals(chessMove.start) && end.equals(chessMove.end) && promotionPiece == chessMove.promotionPiece;
+        if(obj.getClass()!=this.getClass()){
+            return false;
+        }
+        return ((ChessMove) obj).start.equals(start) && ((ChessMove) obj).end.equals(end) && promotion==((ChessMove) obj).promotion;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(start, end, promotionPiece);
+    public String toString(){
+        String result=start+" -> "+end;
+        if(promotion==null){return result;}
+        return result+": "+promotion;
     }
 
-    @Override public String toString(){
-        return String.format("Start: (%d,%d), End: (%d,%d)",start.getRow(),start.getColumn(),end.getRow(),end.getColumn());
+    @Override
+    public int hashCode(){
+        if(promotion!=null){return start.hashCode()*end.hashCode()^promotion.hashCode();}
+        return start.hashCode()*end.hashCode();
     }
 }
