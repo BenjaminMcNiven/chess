@@ -90,7 +90,6 @@ public class ChessPiece implements Cloneable{
 
     @Override
     public Object clone() throws CloneNotSupportedException{
-        ChessPiece clonedPiece = (ChessPiece) super.clone();
-        return clonedPiece;
+        return super.clone();
     }
 }

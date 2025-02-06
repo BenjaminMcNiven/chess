@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -8,14 +9,15 @@ import java.util.Collection;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessGame {
+public class ChessGame implements Cloneable{
 
     private TeamColor currentTurn;
     private ChessBoard board;
 
     public ChessGame() {
         currentTurn=TeamColor.WHITE;
-        board=getBoard();
+        board=new ChessBoard();
+        board.resetBoard();
     }
 
     /**
@@ -52,18 +54,23 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         if (board.getPiece(startPosition)==null){return null;}
         ChessPiece piece = board.getPiece(startPosition);
+        ChessGame.TeamColor teamColor=piece.getTeamColor();
+        Collection<ChessMove> confirmedMoves=new ArrayList<>();
         Collection<ChessMove> moves= piece.pieceMoves(board,startPosition);
         for(ChessMove move: moves) {
-            ChessBoard tempBoard = null;
+            ChessGame tempGame;
             try {
-                tempBoard = (ChessBoard) board.clone();
+                tempGame = (ChessGame) this.clone();
+                tempGame.makeMove(move);
+                if(!tempGame.isInCheck(teamColor)){
+                    confirmedMoves.add(move);
+                }
 
-            } catch (CloneNotSupportedException e) {
-                return moves;
+            } catch (CloneNotSupportedException | InvalidMoveException e) {
+                throw new RuntimeException(e);
             }
-            System.out.println(tempBoard);
         }
-        return moves;
+        return confirmedMoves;
     }
 
 
@@ -74,7 +81,13 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        try {
+            ChessPiece piece=board.getPiece(move.getStartPosition());
+            board.addPiece(move.getEndPosition(),piece);
+            board.addPiece(move.getStartPosition(),null);
+        } catch (Exception e) {
+            throw new InvalidMoveException(e.getMessage());
+        }
     }
 
     /**
@@ -114,7 +127,11 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        board.resetBoard();
+        try {
+            this.board= (ChessBoard) board.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -124,5 +141,32 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
+    @Override
+    public String toString(){
+        return "Turn: " + currentTurn + "\n" +
+                board.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj==null){
+            return false;
+        }
+        if(obj.getClass()!=this.getClass()){
+            return false;
+        }
+        return ((ChessGame) obj).getBoard().equals(board) && ((ChessGame) obj).getTeamTurn()==currentTurn;
+    }
+
+    @Override
+    public int hashCode(){
+        return board.hashCode()*100+currentTurn.hashCode();
     }
 }
