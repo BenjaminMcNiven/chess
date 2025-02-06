@@ -1,17 +1,22 @@
 package passoff.chess;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 public class SandboxTesting {
 
-    public static void main(String[] args) throws CloneNotSupportedException {
-        ChessGame game=new ChessGame();
-        ChessBoard board=game.getBoard();
-        System.out.println(game);
-        ChessPiece piece=board.getPiece(new ChessPosition(7,6));
-        System.out.println(piece.clone());
+    public static void main(String[] args){
+        try {
+            ChessGame game=new ChessGame();
+            ChessBoard board=game.getBoard();
+            System.out.println(game);
+            ChessPiece piece=board.getPiece(new ChessPosition(7,6));
+            System.out.println(piece.clone());
+            game.makeMove(new ChessMove(new ChessPosition(1,4),new ChessPosition(7,6)));
+            game.makeMove(new ChessMove(new ChessPosition(1,3),new ChessPosition(3,2)));
+            System.out.println(game.clone());
+            System.out.println(game.isInCheckmate(ChessGame.TeamColor.BLACK));
+        } catch (CloneNotSupportedException | InvalidMoveException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

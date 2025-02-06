@@ -43,6 +43,9 @@ public class ChessBoard implements Cloneable{
     }
 
     public boolean inBounds(ChessPosition position){
+        if(position==null){
+            return false;
+        }
         return 1<=position.getRow() && position.getRow()<=8 && 1<=position.getColumn() && position.getColumn()<=8;
     }
 
@@ -127,8 +130,10 @@ public class ChessBoard implements Cloneable{
         ChessBoard clonedBoard = (ChessBoard) super.clone();
         for(int row=0; row<=8; row++){
             for(int col=1; col<=8; col++){
-                ChessPiece newPiece= (ChessPiece) getPiece(new ChessPosition(row,col)).clone();
-                clonedBoard.addPiece(new ChessPosition(row,col), newPiece);
+                if(getPiece(new ChessPosition(row,col))!=null){
+                    ChessPiece newPiece= (ChessPiece) getPiece(new ChessPosition(row,col)).clone();
+                    clonedBoard.addPiece(new ChessPosition(row,col), newPiece);
+                }
             }
         }
         
