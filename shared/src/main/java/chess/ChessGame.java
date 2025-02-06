@@ -61,7 +61,7 @@ public class ChessGame implements Cloneable{
             ChessGame tempGame;
             try {
                 tempGame = (ChessGame) this.clone();
-                tempGame.makeMove(move);
+                tempGame.tryMove(move);
                 if(!tempGame.isInCheck(teamColor)){
                     confirmedMoves.add(move);
                 }
@@ -81,6 +81,27 @@ public class ChessGame implements Cloneable{
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if(!validMoves(move.getStartPosition()).contains(move)){
+            throw new InvalidMoveException("Invalid Move attempted");
+        }
+        try {
+            ChessPiece piece=board.getPiece(move.getStartPosition());
+            if(move.getPromotionPiece()==null){
+                board.addPiece(move.getEndPosition(),piece);
+            }
+            else{
+                board.addPiece(move.getEndPosition(),new ChessPiece(piece.getTeamColor(),move.getPromotionPiece()));
+            }
+            board.addPiece(move.getStartPosition(),null);
+            if(currentTurn==TeamColor.WHITE){
+                currentTurn=TeamColor.BLACK;
+            }else {currentTurn=TeamColor.WHITE;}
+        } catch (Exception e) {
+            throw new InvalidMoveException(e.getMessage());
+        }
+    }
+
+    public void tryMove(ChessMove move) throws InvalidMoveException {
         try {
             ChessPiece piece=board.getPiece(move.getStartPosition());
             if(move.getPromotionPiece()==null){
