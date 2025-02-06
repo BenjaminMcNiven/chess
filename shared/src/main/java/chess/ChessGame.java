@@ -81,10 +81,10 @@ public class ChessGame implements Cloneable{
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if(!validMoves(move.getStartPosition()).contains(move)){
+        if(board.getPiece(move.getStartPosition())==null || currentTurn!=board.getPiece(move.getStartPosition()).getTeamColor()){
             throw new InvalidMoveException("Invalid Move attempted");
         }
-        if(board.getPiece(move.getStartPosition())==null || currentTurn!=board.getPiece(move.getStartPosition()).getTeamColor()){
+        if(!validMoves(move.getStartPosition()).contains(move)){
             throw new InvalidMoveException("Invalid Move attempted");
         }
         try {

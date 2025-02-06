@@ -18,6 +18,7 @@ public class SandboxTesting {
             System.out.println(game);
             System.out.println(cloned);
             System.out.println(game.isInCheckmate(ChessGame.TeamColor.BLACK));
+            cloned.makeMove(new ChessMove(new ChessPosition(8,3),new ChessPosition(8,4)));
         } catch (CloneNotSupportedException | InvalidMoveException e) {
             throw new RuntimeException(e);
         }
