@@ -10,15 +10,19 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    private TeamColor currentTurn;
+    private ChessBoard board;
 
+    public ChessGame() {
+        currentTurn=TeamColor.WHITE;
+        board=getBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currentTurn;
     }
 
     /**
@@ -27,7 +31,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        currentTurn=team;
     }
 
     /**
@@ -46,8 +50,22 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        if (board.getPiece(startPosition)==null){return null;}
+        ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> moves= piece.pieceMoves(board,startPosition);
+        for(ChessMove move: moves) {
+            ChessBoard tempBoard = null;
+            try {
+                tempBoard = (ChessBoard) board.clone();
+
+            } catch (CloneNotSupportedException e) {
+                return moves;
+            }
+            System.out.println(tempBoard);
+        }
+        return moves;
     }
+
 
     /**
      * Makes a move in a chess game
@@ -96,7 +114,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        board.resetBoard();
     }
 
     /**
@@ -105,6 +123,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }

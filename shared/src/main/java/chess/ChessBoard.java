@@ -8,7 +8,7 @@ import java.util.Arrays;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Cloneable{
 
     private ChessPiece[][] board;
 
@@ -121,4 +121,18 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(board);
     }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        ChessBoard clonedBoard = (ChessBoard) super.clone();
+        for(int row=0; row<=8; row++){
+            for(int col=1; col<=8; col++){
+                ChessPiece newPiece= (ChessPiece) getPiece(new ChessPosition(row,col)).clone();
+                clonedBoard.addPiece(new ChessPosition(row,col), newPiece);
+            }
+        }
+        
+        return clonedBoard;
+    }
+
 }
