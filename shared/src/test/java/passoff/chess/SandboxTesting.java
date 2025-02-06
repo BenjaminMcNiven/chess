@@ -13,10 +13,14 @@ public class SandboxTesting {
             System.out.println(piece.clone());
             game.makeMove(new ChessMove(new ChessPosition(1,4),new ChessPosition(7,6)));
             game.makeMove(new ChessMove(new ChessPosition(1,3),new ChessPosition(3,2)));
-            System.out.println(game.clone());
+            ChessGame cloned= (ChessGame) game.clone();
+            cloned.makeMove(new ChessMove(new ChessPosition(2,5),new ChessPosition(4,5)));
+            System.out.println(game);
+            System.out.println(cloned);
             System.out.println(game.isInCheckmate(ChessGame.TeamColor.BLACK));
         } catch (CloneNotSupportedException | InvalidMoveException e) {
             throw new RuntimeException(e);
         }
     }
+
 }

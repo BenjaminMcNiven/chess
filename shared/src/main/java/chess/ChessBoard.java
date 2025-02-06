@@ -109,15 +109,27 @@ public class ChessBoard implements Cloneable{
 
     @Override
     public String toString(){
-        StringBuilder result=new StringBuilder();
-        for(ChessPiece[] row:board){
-            result.append("| ");
-            for(ChessPiece piece:row){
-                result.append(piece).append(" | ");
+//        StringBuilder result=new StringBuilder();
+//        for(ChessPiece[] row:board){
+//            result.append("| ");
+//            for(ChessPiece piece:row){
+//                result.append(piece).append(" | ");
+//            }
+//            result.append("\n");
+//        }
+//        return result.toString();
+
+        int cellWidth = 7; // Fixed width for each cell (enough for "KNIGHT")
+        StringBuilder sb = new StringBuilder();
+
+        for (ChessPiece[] row : board) {
+            for (ChessPiece cell : row) {
+                String cellText = (cell == null) ? "." : cell.toString(); // Use piece name or "."
+                sb.append(String.format("| %-"+ (cellWidth - 1) +"s", cellText));
             }
-            result.append("\n");
+            sb.append("|\n"); // End row with "|"
         }
-        return result.toString();
+        return sb.toString();
     }
 
     @Override
@@ -128,7 +140,8 @@ public class ChessBoard implements Cloneable{
     @Override
     protected Object clone() throws CloneNotSupportedException {
         ChessBoard clonedBoard = (ChessBoard) super.clone();
-        for(int row=0; row<=8; row++){
+        clonedBoard.board=new ChessPiece[8][8];
+        for(int row=1; row<=8; row++){
             for(int col=1; col<=8; col++){
                 if(getPiece(new ChessPosition(row,col))!=null){
                     ChessPiece newPiece= (ChessPiece) getPiece(new ChessPosition(row,col)).clone();
