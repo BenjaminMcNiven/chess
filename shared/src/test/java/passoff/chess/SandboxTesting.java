@@ -9,13 +9,18 @@ public class SandboxTesting {
     public static void playGame(){
         ChessGame game=new ChessGame();
         Scanner scanner = new Scanner(System.in);
-        while(!game.isInCheckmate(ChessGame.TeamColor.BLACK) && !game.isInCheckmate(ChessGame.TeamColor.WHITE) && !game.isInStalemate(ChessGame.TeamColor.BLACK) && !game.isInStalemate(ChessGame.TeamColor.WHITE)){
+        ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
+        ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
+        while(!game.isInCheckmate(black) && !game.isInCheckmate(white) && !game.isInStalemate(black) && !game.isInStalemate(white)){
             System.out.println(game);
             try {
                 String moveText= scanner.nextLine();
-                ChessMove nextMove=new ChessMove(new ChessPosition(Integer.parseInt(moveText.split(",")[0]),Integer.parseInt(moveText.split(",")[1])),new ChessPosition(Integer.parseInt(moveText.split(",")[2]),Integer.parseInt(moveText.split(",")[3])));
+                String[] digits=moveText.split(",");
+                ChessPosition startPos = new ChessPosition(Integer.parseInt(digits[0]),Integer.parseInt(digits[1]));
+                ChessPosition endPos = new ChessPosition(Integer.parseInt(digits[2]),Integer.parseInt(digits[3]));
+                ChessMove nextMove=new ChessMove(startPos,endPos);
                 game.makeMove(nextMove);
-            } catch (NumberFormatException | InvalidMoveException e) {}
+            } catch (NumberFormatException | InvalidMoveException e) {System.out.println("TRY AGAIN");}
         }
         if(game.isInCheckmate(ChessGame.TeamColor.BLACK)){
             System.out.println("BLACK is in Checkmate. Victory WHITE");

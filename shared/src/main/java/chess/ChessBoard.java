@@ -109,16 +109,6 @@ public class ChessBoard implements Cloneable{
 
     @Override
     public String toString(){
-//        StringBuilder result=new StringBuilder();
-//        for(ChessPiece[] row:board){
-//            result.append("| ");
-//            for(ChessPiece piece:row){
-//                result.append(piece).append(" | ");
-//            }
-//            result.append("\n");
-//        }
-//        return result.toString();
-
         int cellWidth = 7; // Fixed width for each cell (enough for "KNIGHT")
         StringBuilder sb = new StringBuilder();
 
