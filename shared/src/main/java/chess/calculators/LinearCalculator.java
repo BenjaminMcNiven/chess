@@ -1,4 +1,4 @@
-package chess.pieceCalculators;
+package chess.calculators;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -28,9 +28,9 @@ public class LinearCalculator implements MovesCalculator{
                     moves.add(new ChessMove(position,newPosition));
                     break;
                 }
-                else break;
+                else {break;}
             }
-            else break;
+            else {break;}
         }
         return moves;
     }

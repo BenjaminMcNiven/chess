@@ -244,12 +244,11 @@ public class ChessGame implements Cloneable{
         for(int row=1; row<=8; row++){
             for(int col=1; col<=8; col++){
                 ChessPiece attackingPiece = board.getPiece(new ChessPosition(row,col));
-                if(attackingPiece!=null && attackingPiece.getTeamColor()!=teamColor){
-                    Collection<ChessMove> moves=attackingPiece.pieceMoves(board,new ChessPosition(row,col));
-                    for(ChessMove move:moves){
-                        if(move.getEndPosition().equals(position)){
-                            return true;
-                        }
+                if(attackingPiece==null || attackingPiece.getTeamColor()==teamColor){continue;}
+                Collection<ChessMove> moves=attackingPiece.pieceMoves(board,new ChessPosition(row,col));
+                for(ChessMove move:moves){
+                    if(move.getEndPosition().equals(position)){
+                        return true;
                     }
                 }
             }
@@ -293,18 +292,17 @@ public class ChessGame implements Cloneable{
         for(int row=1; row<=8; row++){
             for(int col=1; col<=8; col++){
                 ChessPiece defendingPiece = board.getPiece(new ChessPosition(row,col));
-                if(defendingPiece!=null && defendingPiece.getTeamColor()==king.getTeamColor()){
-                    Collection<ChessMove> moves=validMoves(new ChessPosition(row,col));
-                    for(ChessMove move:moves){
-                        try {
-                            ChessGame tempGame = (ChessGame) this.clone();
-                            tempGame.makeMove(move);
-                            if(!tempGame.isInCheck(teamColor)){
-                                return false;
-                            }
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
+                if(defendingPiece==null || defendingPiece.getTeamColor()!=king.getTeamColor()){continue;}
+                Collection<ChessMove> moves = validMoves(new ChessPosition(row, col));
+                for (ChessMove move : moves) {
+                    try {
+                        ChessGame tempGame = (ChessGame) this.clone();
+                        tempGame.makeMove(move);
+                        if (!tempGame.isInCheck(teamColor)) {
+                            return false;
                         }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
