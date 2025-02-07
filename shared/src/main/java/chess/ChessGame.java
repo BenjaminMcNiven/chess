@@ -13,11 +13,13 @@ public class ChessGame implements Cloneable{
 
     private TeamColor currentTurn;
     private ChessBoard board;
+    private boolean[] castlePieceMoved;
 
     public ChessGame() {
         currentTurn=TeamColor.WHITE;
         board=new ChessBoard();
         board.resetBoard();
+        castlePieceMoved= new boolean[]{false, false, false, false, false, false};
     }
 
     /**
@@ -56,6 +58,7 @@ public class ChessGame implements Cloneable{
         ChessPiece piece = board.getPiece(startPosition);
         ChessGame.TeamColor teamColor=piece.getTeamColor();
         Collection<ChessMove> confirmedMoves=new ArrayList<>();
+        if(piece.getPieceType()== ChessPiece.PieceType.KING){confirmedMoves.addAll(castleMoves(startPosition));}
         Collection<ChessMove> moves= piece.pieceMoves(board,startPosition);
         for(ChessMove move: moves) {
             ChessGame tempGame;
@@ -73,6 +76,55 @@ public class ChessGame implements Cloneable{
         return confirmedMoves;
     }
 
+    public Collection<ChessMove> castleMoves(ChessPosition kingPosition){
+        Collection<ChessMove> moves=new ArrayList<>();
+        ChessPiece piece=board.getPiece(kingPosition);
+        if (piece == null) {return moves;}
+        if(isInDanger(kingPosition,piece.getTeamColor())){return moves;}
+        if(piece.getTeamColor()==TeamColor.BLACK){
+//            Queenside Castling
+            if(!castlePieceMoved[4] && !castlePieceMoved[3]){
+                int col;
+                for(col=0; col<3; col++){
+                    boolean pieceThere=board.getPiece(new ChessPosition(8,4-col))!=null;
+                    boolean positionInDanger= col!=2 && isInDanger(new ChessPosition(8,4-col),piece.getTeamColor());
+                    if(pieceThere || positionInDanger){break;}
+                }
+                if(col==3){moves.add(new ChessMove(new ChessPosition(8,5),new ChessPosition(8,3)));}
+            }
+//            Kingside Castling
+            if(!castlePieceMoved[4] && !castlePieceMoved[5]){
+                int col;
+                for(col=0; col<2;col++){
+                    boolean pieceThere=board.getPiece(new ChessPosition(8,6+col))!=null;
+                    boolean positionInDanger=isInDanger(new ChessPosition(8,6+col),piece.getTeamColor());
+                    if(pieceThere || positionInDanger){break;}
+                }
+                if(col==2){moves.add(new ChessMove(new ChessPosition(8,5),new ChessPosition(8,7)));}
+            }
+        }
+        if(piece.getTeamColor()==TeamColor.WHITE){
+            if(!castlePieceMoved[1] && !castlePieceMoved[0]){
+                int col;
+                for(col=0; col<3;col++){
+                    boolean pieceThere=board.getPiece(new ChessPosition(1,2+col))!=null;
+                    boolean positionInDanger=isInDanger(new ChessPosition(1,2+col),piece.getTeamColor());
+                    if(pieceThere || positionInDanger){break;}
+                }
+                if(col==3){moves.add(new ChessMove(new ChessPosition(1,5),new ChessPosition(1,3)));}
+            }
+            if(!castlePieceMoved[1] && !castlePieceMoved[2]){
+                int col;
+                for(col=0; col<2;col++){
+                    boolean pieceThere=board.getPiece(new ChessPosition(1,6+col))!=null;
+                    boolean positionInDanger=isInDanger(new ChessPosition(1,6+col),piece.getTeamColor());
+                    if(pieceThere || positionInDanger){break;}
+                }
+                if(col==2){moves.add(new ChessMove(new ChessPosition(1,5),new ChessPosition(1,7)));}
+            }
+        }
+        return moves;
+    }
 
     /**
      * Makes a move in a chess game
@@ -91,6 +143,48 @@ public class ChessGame implements Cloneable{
             ChessPiece piece=board.getPiece(move.getStartPosition());
             if(move.getPromotionPiece()==null){
                 board.addPiece(move.getEndPosition(),piece);
+                if(piece.getTeamColor()==TeamColor.BLACK && piece.getPieceType()== ChessPiece.PieceType.KING && !castlePieceMoved[4]){
+                    castlePieceMoved[4]=true;
+                    if((move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==2){
+                        board.addPiece(new ChessPosition(8,4),board.getPiece(new ChessPosition(8,1)));
+                        board.addPiece(new ChessPosition(8,1),null);
+                        castlePieceMoved[3]=true;
+                    }
+                    if((move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==-2){
+                        board.addPiece(new ChessPosition(8,6),board.getPiece(new ChessPosition(8,8)));
+                        board.addPiece(new ChessPosition(8,8),null);
+                        castlePieceMoved[5]=true;
+                    }
+                }
+                if(piece.getTeamColor()==TeamColor.BLACK && piece.getPieceType()== ChessPiece.PieceType.ROOK && (!castlePieceMoved[3] || !castlePieceMoved[5])){
+                    if(move.getStartPosition().equals(new ChessPosition(8,1))){
+                        castlePieceMoved[3]=true;
+                    }
+                    if(move.getStartPosition().equals(new ChessPosition(8,8))){
+                        castlePieceMoved[5]=true;
+                    }
+                }
+                if(piece.getTeamColor()==TeamColor.WHITE && piece.getPieceType()== ChessPiece.PieceType.KING && !castlePieceMoved[1]){
+                    castlePieceMoved[1]=true;
+                    if((move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==2){
+                        board.addPiece(new ChessPosition(1,4),board.getPiece(new ChessPosition(1,1)));
+                        board.addPiece(new ChessPosition(1,1),null);
+                        castlePieceMoved[0]=true;
+                    }
+                    if((move.getStartPosition().getColumn()-move.getEndPosition().getColumn())==-2){
+                        board.addPiece(new ChessPosition(1,6),board.getPiece(new ChessPosition(1,8)));
+                        board.addPiece(new ChessPosition(1,8),null);
+                        castlePieceMoved[2]=true;
+                    }
+                }
+                if(piece.getTeamColor()==TeamColor.WHITE && piece.getPieceType()== ChessPiece.PieceType.ROOK && (!castlePieceMoved[0] || !castlePieceMoved[2])){
+                    if(move.getStartPosition().equals(new ChessPosition(1,1))){
+                        castlePieceMoved[0]=true;
+                    }
+                    if(move.getStartPosition().equals(new ChessPosition(1,8))){
+                        castlePieceMoved[2]=true;
+                    }
+                }
             }
             else{
                 board.addPiece(move.getEndPosition(),new ChessPiece(piece.getTeamColor(),move.getPromotionPiece()));
@@ -122,12 +216,11 @@ public class ChessGame implements Cloneable{
         }
     }
 
-    public boolean isInDanger(ChessPosition position) {
-        ChessPiece piece=board.getPiece(position);
+    public boolean isInDanger(ChessPosition position,ChessGame.TeamColor teamColor) {
         for(int row=1; row<=8; row++){
             for(int col=1; col<=8; col++){
                 ChessPiece attackingPiece = board.getPiece(new ChessPosition(row,col));
-                if(attackingPiece!=null && attackingPiece.getTeamColor()!=piece.getTeamColor()){
+                if(attackingPiece!=null && attackingPiece.getTeamColor()!=teamColor){
                     Collection<ChessMove> moves=attackingPiece.pieceMoves(board,new ChessPosition(row,col));
                     for(ChessMove move:moves){
                         if(move.getEndPosition().equals(position)){
@@ -160,7 +253,7 @@ public class ChessGame implements Cloneable{
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition=findKing(teamColor);
-        return isInDanger(kingPosition);
+        return isInDanger(kingPosition,teamColor);
     }
 
     /**
@@ -228,6 +321,7 @@ public class ChessGame implements Cloneable{
     public void setBoard(ChessBoard board) {
         try {
             this.board= (ChessBoard) board.clone();
+            castlePieceMoved=new boolean[]{false,false,false,false,false,false};
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
