@@ -61,8 +61,9 @@ public class ChessGame implements Cloneable{
         ChessGame.TeamColor teamColor=piece.getTeamColor();
         Collection<ChessMove> confirmedMoves=new ArrayList<>();
         if(piece.getPieceType()==ChessPiece.PieceType.KING){confirmedMoves.addAll(castlingMoves(startPosition));}
-        ChessPiece.PieceType lastPieceType = board.getPiece(lastMove.getEndPosition()).getPieceType();
-        if(piece.getPieceType()==ChessPiece.PieceType.PAWN && lastMove!=null && lastPieceType==ChessPiece.PieceType.PAWN){
+        ChessPiece.PieceType lastPieceType=null;
+        if(lastMove!=null){lastPieceType = board.getPiece(lastMove.getEndPosition()).getPieceType();}
+        if(piece.getPieceType()==ChessPiece.PieceType.PAWN && lastPieceType==ChessPiece.PieceType.PAWN){
             confirmedMoves.add(enPassantMoves(startPosition));
         }
         Collection<ChessMove> moves= piece.pieceMoves(board,startPosition);
