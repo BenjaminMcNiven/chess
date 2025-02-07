@@ -309,13 +309,14 @@ public class ChessGame implements Cloneable{
                 if(defendingPiece==null || defendingPiece.getTeamColor()!=king.getTeamColor()){continue;}
                 Collection<ChessMove> moves = validMoves(new ChessPosition(row, col));
                 for (ChessMove move : moves) {
+                    ChessGame tempGame;
                     try {
-                        ChessGame tempGame = (ChessGame) this.clone();
+                        tempGame = (ChessGame) this.clone();
                         tempGame.makeMove(move);
-                        if (!tempGame.isInCheck(teamColor)) {return false;}
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                    if (!tempGame.isInCheck(teamColor)) {return false;}
                 }
             }
         }
