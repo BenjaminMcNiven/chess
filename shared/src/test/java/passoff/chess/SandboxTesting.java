@@ -15,7 +15,7 @@ public class SandboxTesting {
                 String moveText= scanner.nextLine();
                 ChessMove nextMove=new ChessMove(new ChessPosition(Integer.parseInt(moveText.split(",")[0]),Integer.parseInt(moveText.split(",")[1])),new ChessPosition(Integer.parseInt(moveText.split(",")[2]),Integer.parseInt(moveText.split(",")[3])));
                 game.makeMove(nextMove);
-            } catch (NumberFormatException | InvalidMoveException _) {}
+            } catch (NumberFormatException | InvalidMoveException e) {}
         }
         if(game.isInCheckmate(ChessGame.TeamColor.BLACK)){
             System.out.println("BLACK is in Checkmate. Victory WHITE");
