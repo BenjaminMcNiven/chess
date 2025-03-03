@@ -18,20 +18,20 @@ public class JoinGameService {
 
     public void joinGame(String authToken, JoinGameRequest request) throws DataAccessException {
         AuthData authData=authDAO.getAuth(authToken);
-        GameData gameData=gameDAO.getGame(request.gameID());
+        GameData gameDat=gameDAO.getGame(request.gameID());
         switch (request.playerColor()){
             case "BLACK"-> {
-                if (gameData.blackUsername() != null) {
+                if (gameDat.blackUsername() != null) {
                     throw new DataAccessException("Error: already taken");
                 }
-                GameData newGame = new GameData(request.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game());
+                GameData newGame = new GameData(request.gameID(), gameDat.whiteUsername(), authData.username(), gameDat.gameName(), gameDat.game());
                 gameDAO.updateGame(newGame);
             }
             case "WHITE"->{
-                if(gameData.whiteUsername()!=null) {
+                if(gameDat.whiteUsername()!=null) {
                     throw new DataAccessException("Error: already taken");
                 }
-                GameData newGame=new GameData(request.gameID(), authData.username(),gameData.blackUsername(),gameData.gameName(),gameData.game());
+                GameData newGame=new GameData(request.gameID(), authData.username(),gameDat.blackUsername(),gameDat.gameName(),gameDat.game());
                 gameDAO.updateGame(newGame);
             }
         }

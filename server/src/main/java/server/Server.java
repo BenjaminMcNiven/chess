@@ -153,7 +153,11 @@ public class Server {
     private Object joinGame(Request req,Response res){
         var request = new Gson().fromJson(req.body(), JoinGameRequest.class);
         String authToken=req.headers("Authorization");
-        if(isNullOrEmpty(request.playerColor()) || (!Objects.equals(request.playerColor(), "WHITE") && !Objects.equals(request.playerColor(), "BLACK")) || isNullOrEmpty(request.gameID())){
+        if(isNullOrEmpty(request.playerColor()) || isNullOrEmpty(request.gameID())){
+            res.status(400);
+            return new Gson().toJson(Map.of("message", "Error: bad request"));
+        }
+        if(!Objects.equals(request.playerColor(), "WHITE") && !Objects.equals(request.playerColor(), "BLACK")){
             res.status(400);
             return new Gson().toJson(Map.of("message", "Error: bad request"));
         }
