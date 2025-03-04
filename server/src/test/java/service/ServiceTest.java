@@ -70,7 +70,8 @@ class ServiceTest {
     @Order(6)
     @Test
     void loginNegative() {
-
+        LoginService loginService = new LoginService(userDAO, authDAO);
+        Assertions.assertThrows(DataAccessException.class, ()-> loginService.login(new UserData("username", "passwor", null)));
     }
     @Test
     void listGamesPositive() {
