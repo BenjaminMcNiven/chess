@@ -123,11 +123,11 @@ class ServiceTest {
         try {
             JoinGameService joinGameService = new JoinGameService(authDAO,gameDAO);
             LoginService loginService = new LoginService(userDAO,authDAO);
-            AuthData authToken = loginService.login(new UserData("username","password",null));
+            AuthData auth = loginService.login(new UserData("username","password",null));
             CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
             int gameID = createGameService.createGame("game");
-            joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID));
-            Assertions.assertThrows(DataAccessException.class,()->joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID)));
+            joinGameService.joinGame(auth.authToken(),new JoinGameRequest("WHITE",gameID));
+            Assertions.assertThrows(DataAccessException.class,()->joinGameService.joinGame(auth.authToken(),new JoinGameRequest("WHITE",gameID)));
         } catch (DataAccessException e) {
             Assertions.fail();
         }
