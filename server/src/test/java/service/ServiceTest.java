@@ -47,7 +47,15 @@ class ServiceTest {
     @Order(4)
     @Test
     void logoutPositive() {
-
+        try {
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            LogoutService logoutService = new LogoutService(authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            logoutService.logout(authToken.authToken());
+            Assertions.assertNull(authDAO.getAuth(authToken.authToken()));
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
     }
     @Order(3)
     @Test
