@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
+import server.JoinGameRequest;
 
 import java.util.Collection;
 
@@ -85,7 +86,7 @@ class ServiceTest {
         LoginService loginService = new LoginService(userDAO, authDAO);
         Assertions.assertThrows(DataAccessException.class, ()-> loginService.login(new UserData("username", "passwor", null)));
     }
-
+    @Order(7)
     @Test
     void createGamePositive() {
         CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
@@ -93,37 +94,49 @@ class ServiceTest {
         Collection<GameData> games = gameDAO.listGames();
         Assertions.assertTrue(games.contains(new GameData(gameID, null, null, "game", new ChessGame())));
     }
-    @Test
-    void createGameNegative() {
-        CreateGameService createGameService=new CreateGameService(authDAO,gameDAO);
-//        Assertions.assertThrows(DataAccessException.class,)
-    }
+    @Order(8)
     @Test
     void listGamesPositive() {
         ListGamesService listGamesService=new ListGamesService(gameDAO);
-
+        Collection<GameData> games=listGamesService.listGames();
+        Assertions.assertTrue(games.size()==1);
     }
-    @Test
-    void listGamesNegative() {
 
-    }
     @Test
     void joinGamePositive() {
-
+        try{
+            JoinGameService joinGameService = new JoinGameService(authDAO,gameDAO);
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
+            int gameID = createGameService.createGame("game");
+            joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID));
+            Collection<GameData> games = gameDAO.listGames();
+            Assertions.assertTrue(games.contains(new GameData(gameID, "username", null, "game", new ChessGame())));
+        }catch (DataAccessException e){
+            Assertions.fail();
+        }
     }
     @Test
     void joinGameNegative() {
-
+        try {
+            JoinGameService joinGameService = new JoinGameService(authDAO,gameDAO);
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
+            int gameID = createGameService.createGame("game");
+            joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID));
+            Assertions.assertThrows(DataAccessException.class,()->joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID)));
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
     }
 
     @Test
     void clearDatabasePositive() {
 
     }
-    @Test
-    void clearDatabaseNegative() {
 
-    }
     @Test
     void authenticatePositive() {
 
