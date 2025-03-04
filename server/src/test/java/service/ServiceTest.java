@@ -101,7 +101,7 @@ class ServiceTest {
         Collection<GameData> games=listGamesService.listGames();
         Assertions.assertTrue(games.size()==1);
     }
-
+    @Order(9)
     @Test
     void joinGamePositive() {
         try{
@@ -117,6 +117,7 @@ class ServiceTest {
             Assertions.fail();
         }
     }
+    @Order(10)
     @Test
     void joinGameNegative() {
         try {
@@ -131,16 +132,19 @@ class ServiceTest {
             Assertions.fail();
         }
     }
-
+    @Order(11)
     @Test
     void clearDatabasePositive() {
-
+        ClearDatabaseService clearDatabaseService=new ClearDatabaseService(userDAO,authDAO,gameDAO);
+        clearDatabaseService.clear();
+        Assertions.assertTrue(gameDAO.listGames().size()==0);
     }
-
+    @Order(12)
     @Test
     void authenticatePositive() {
 
     }
+    @Order(13)
     @Test
     void authenticateNegative() {
 
