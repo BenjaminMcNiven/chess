@@ -1,7 +1,9 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,6 +11,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
+
+import java.util.Collection;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
@@ -60,7 +64,7 @@ class ServiceTest {
     @Order(3)
     @Test
     void logoutNegative() {
-
+//        is there a way to fail the logout, no right??!??, not from the service class
     }
     @Order(5)
     @Test
@@ -81,8 +85,22 @@ class ServiceTest {
         LoginService loginService = new LoginService(userDAO, authDAO);
         Assertions.assertThrows(DataAccessException.class, ()-> loginService.login(new UserData("username", "passwor", null)));
     }
+
+    @Test
+    void createGamePositive() {
+        CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
+        int gameID = createGameService.createGame("game");
+        Collection<GameData> games = gameDAO.listGames();
+        Assertions.assertTrue(games.contains(new GameData(gameID, null, null, "game", new ChessGame())));
+    }
+    @Test
+    void createGameNegative() {
+        CreateGameService createGameService=new CreateGameService(authDAO,gameDAO);
+//        Assertions.assertThrows(DataAccessException.class,)
+    }
     @Test
     void listGamesPositive() {
+        ListGamesService listGamesService=new ListGamesService(gameDAO);
 
     }
     @Test
@@ -97,14 +115,7 @@ class ServiceTest {
     void joinGameNegative() {
 
     }
-    @Test
-    void createGamePositive() {
 
-    }
-    @Test
-    void createGameNegative() {
-
-    }
     @Test
     void clearDatabasePositive() {
 
