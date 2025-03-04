@@ -142,11 +142,21 @@ class ServiceTest {
     @Order(12)
     @Test
     void authenticatePositive() {
+        try {
+            AuthenticateService authenticateService=new AuthenticateService(authDAO);
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            Assertions.assertTrue(authenticateService.authenticated(authToken.authToken()));
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
+
 
     }
     @Order(13)
     @Test
     void authenticateNegative() {
-
+        AuthenticateService authenticateService=new AuthenticateService(authDAO);
+        Assertions.assertFalse(authenticateService.authenticated(""));
     }
 }
