@@ -157,6 +157,6 @@ class ServiceTest {
     @Test
     void authenticateNegative() {
         AuthenticateService authenticateService=new AuthenticateService(authDAO);
-        Assertions.assertFalse(authenticateService.authenticated(""));
+        Assertions.assertFalse(authenticateService.authenticated("test"));
     }
 }
