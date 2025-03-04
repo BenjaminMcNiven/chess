@@ -5,7 +5,12 @@ import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.MethodOrderer;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 class ServiceTest {
 
@@ -19,7 +24,7 @@ class ServiceTest {
         authDAO=new MemoryAuthDAO();
         gameDAO=new MemoryGameDAO();
     }
-
+    @Order(1)
     @Test
     void registerPositive(){
         try {
@@ -33,25 +38,36 @@ class ServiceTest {
             Assertions.fail();
         }
     }
+    @Order(2)
     @Test
     void registerNegative(){
         RegisterService registerService = new RegisterService(userDAO, authDAO);
         Assertions.assertThrows(DataAccessException.class, ()-> registerService.register(new UserData("username", "password", null)));
     }
-
+    @Order(4)
     @Test
     void logoutPositive() {
 
     }
+    @Order(3)
     @Test
     void logoutNegative() {
 
     }
-
+    @Order(5)
     @Test
     void loginPositive() {
-
+        try {
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            AuthData expected = new AuthData(authToken.authToken(),"username");
+            AuthData observed = authDAO.getAuth(authToken.authToken());
+            Assertions.assertEquals(expected,observed);
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
     }
+    @Order(6)
     @Test
     void loginNegative() {
 
