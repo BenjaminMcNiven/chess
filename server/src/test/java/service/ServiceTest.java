@@ -99,7 +99,7 @@ class ServiceTest {
     void listGamesPositive() {
         ListGamesService listGamesService=new ListGamesService(gameDAO);
         Collection<GameData> games=listGamesService.listGames();
-        Assertions.assertTrue(games.size()==1);
+        Assertions.assertEquals(1, games.size());
     }
     @Order(9)
     @Test
@@ -132,21 +132,31 @@ class ServiceTest {
             Assertions.fail();
         }
     }
-    @Order(11)
+    @Order(13)
     @Test
     void clearDatabasePositive() {
         ClearDatabaseService clearDatabaseService=new ClearDatabaseService(userDAO,authDAO,gameDAO);
         clearDatabaseService.clear();
-        Assertions.assertTrue(gameDAO.listGames().size()==0);
+        Assertions.assertEquals(0, gameDAO.listGames().size());
+    }
+    @Order(11)
+    @Test
+    void authenticatePositive() {
+        try {
+            AuthenticateService authenticateService=new AuthenticateService(authDAO);
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            Assertions.assertTrue(authenticateService.authenticated(authToken.authToken()));
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
+
+
     }
     @Order(12)
     @Test
-    void authenticatePositive() {
-
-    }
-    @Order(13)
-    @Test
     void authenticateNegative() {
-
+        AuthenticateService authenticateService=new AuthenticateService(authDAO);
+        Assertions.assertFalse(authenticateService.authenticated(""));
     }
 }
