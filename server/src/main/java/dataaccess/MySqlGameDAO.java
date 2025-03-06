@@ -1,5 +1,7 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.GameData;
 
 import java.sql.PreparedStatement;
@@ -30,7 +32,7 @@ public class MySqlGameDAO implements GameDAO{
             statement.setString(2, newGame.whiteUsername());
             statement.setString(3, newGame.blackUsername());
             statement.setString(4, newGame.gameName());
-            statement.setString(5, String.valueOf(newGame.game()));
+            statement.setString(5, new Gson().toJson(newGame.game()));
             statement.executeUpdate();
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
@@ -39,12 +41,38 @@ public class MySqlGameDAO implements GameDAO{
 
     @Override
     public GameData getGame(int gameId) {
-        return null;
+        String getGame = "SELECT gameID,whiteUsername,blackUsername,gameName,game from games WHERE gameID=? ;";
+        GameData fetchedGame;
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getGame)) {
+            statement.setString(1, String.valueOf(gameId));
+            List<Map<String, Object>> queryResult = executeQuerySQL(statement);
+            if(queryResult.isEmpty()) {
+                return null;
+            } else if (queryResult.size()>1) {
+                throw new RuntimeException("Multiple Games returned");
+            }
+            Map<String,Object> result = queryResult.getFirst();
+            fetchedGame=new GameData(Integer.parseInt((String) result.get("gameID")),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class));
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return fetchedGame;
     }
 
     @Override
     public Collection<GameData> listGames() {
-        return List.of();
+        String getGame = "SELECT gameID,whiteUsername,blackUsername,gameName,game from games;";
+        List<GameData> games=new ArrayList<>();
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getGame)) {
+            List<Map<String, Object>> queryResult = executeQuerySQL(statement);
+            for(Map<String, Object> result:queryResult){
+                System.out.println(result);
+                games.add(new GameData((Integer) result.get("gameID"),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class)));
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return games;
     }
 
     @Override
