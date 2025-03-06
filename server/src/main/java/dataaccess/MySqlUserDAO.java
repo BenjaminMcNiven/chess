@@ -27,7 +27,7 @@ public class MySqlUserDAO implements UserDAO{
 
     @Override
     public void createUser(UserData newUser) {
-        String createUser = "INSERT INTO users (username,password,email) VALUES (%s, %s, %s);";
+        String createUser = "INSERT INTO users (username,password,email) VALUES (?, ?, ?);";
         try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(createUser)) {
             statement.setString(1, newUser.username());
             statement.setString(2, newUser.password());
@@ -39,11 +39,23 @@ public class MySqlUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String authToken) {
-        String getAuth = String.format("SELECT authToken, username from auths WHERE authToken=%s ;",authToken);
-        List<Map<String, Object>> queryResult = executeQuerySQL(getAuth);
-        System.out.println(queryResult);
-        return null;
+    public UserData getUser(String username) {
+        String getUser = "SELECT username,password,email from users WHERE username=? ;";
+        UserData fetchedUser;
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getUser)) {
+            statement.setString(1, username);
+            List<Map<String, Object>> queryResult = executeQuerySQL(statement);
+            if(queryResult.isEmpty()) {
+                return null;
+            } else if (queryResult.size()>1) {
+                throw new RuntimeException("Multiple Users returned");
+            }
+            Map<String,Object> result = queryResult.get(0);
+            fetchedUser=new UserData((String) result.get("username"), (String) result.get("password"), (String) result.get("email"));
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return fetchedUser;
     }
 
     private final String[] createStatements = {
@@ -69,11 +81,9 @@ public class MySqlUserDAO implements UserDAO{
         }
     }
 
-    public List<Map<String, Object>> executeQuerySQL(String query) {
+    public List<Map<String, Object>> executeQuerySQL(PreparedStatement statement) {
         List<Map<String, Object>> results = new ArrayList<>();
-        try (var conn = DatabaseManager.getConnection();
-             var preparedStatement = conn.prepareStatement(query);
-             var resultSet = preparedStatement.executeQuery()) {
+        try (var resultSet = statement.executeQuery()) {
             var metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
             while (resultSet.next()) {
@@ -83,7 +93,7 @@ public class MySqlUserDAO implements UserDAO{
                 }
                 results.add(row);
             }
-        } catch (DataAccessException | SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return results;

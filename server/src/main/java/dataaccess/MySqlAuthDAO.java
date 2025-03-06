@@ -1,7 +1,9 @@
 package dataaccess;
 
 import model.AuthData;
+import model.UserData;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,40 +18,55 @@ public class MySqlAuthDAO implements AuthDAO{
     
     @Override
     public void clear() {
-        String[] clear = new String[]{
-                """
-                DELETE FROM auths;
-                """
-        };
-        executeSQL(clear);
+        String clear = "DELETE FROM auths;";
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(clear)) {
+            statement.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void createAuth(AuthData newAuth) {
-        String[] createAuth = new String[]{String.format(
-                """
-                INSERT INTO auths (authToken, username) VALUES (%s, %s);
-                """,newAuth.authToken(),newAuth.username())
-        };
-        executeSQL(createAuth);
+        String createAuth = "INSERT INTO auths (authToken, username) VALUES (?, ?);";
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(createAuth)) {
+            statement.setString(1, newAuth.authToken());
+            statement.setString(2, newAuth.username());
+            statement.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public AuthData getAuth(String authToken) {
-        String getAuth = String.format("SELECT authToken, username from auths WHERE authToken=%s ;",authToken);
-        List<Map<String, Object>> queryResult = executeQuerySQL(getAuth);
-        System.out.println(queryResult);
-        return new AuthData("","");
+        String getUser = "SELECT authToken,username from auths WHERE authToken=? ;";
+        AuthData fetchedAuth;
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getUser)) {
+            statement.setString(1, authToken);
+            List<Map<String, Object>> queryResult = executeQuerySQL(statement);
+            if(queryResult.isEmpty()) {
+                return null;
+            } else if (queryResult.size()>1) {
+                throw new RuntimeException("Multiple Users returned");
+            }
+            Map<String,Object> result = queryResult.get(0);
+            fetchedUser=new UserData((String) result.get("username"), (String) result.get("password"), (String) result.get("email"));
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return fetchedUser;
     }
 
     @Override
     public void deleteAuth(String authToken) {
-        String[] createAuth = new String[]{String.format(
-                """
-                DELETE FROM auths WHERE authToken=%s;
-                """,authToken)
-        };
-        executeSQL(createAuth);
+        String deleteAuth ="DELETE FROM auths WHERE authToken=?;";
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(deleteAuth)) {
+            statement.setString(1, authToken);
+            statement.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final String[] createStatements = {
@@ -64,27 +81,19 @@ public class MySqlAuthDAO implements AuthDAO{
     private void configureDatabase() throws RuntimeException {
         try{
             DatabaseManager.createDatabase();
-            executeSQL(createStatements);
-        } catch (DataAccessException e) {
+            for (var statement : createStatements) {
+                var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(String.format("Unable to configure database: %s", e.getMessage()));
         }
     }
 
-    private void executeSQL(String[] toExecuteSQL) {
-        for (var statement : toExecuteSQL) {
-            try (var conn = DatabaseManager.getConnection(); var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
-            } catch (DataAccessException | SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public List<Map<String, Object>> executeQuerySQL(String query) {
+    public List<Map<String, Object>> executeQuerySQL(PreparedStatement statement) {
         List<Map<String, Object>> results = new ArrayList<>();
-        try (var conn = DatabaseManager.getConnection();
-             var preparedStatement = conn.prepareStatement(query);
-             var resultSet = preparedStatement.executeQuery()) {
+        try (var resultSet = statement.executeQuery()) {
             var metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
             while (resultSet.next()) {
@@ -94,7 +103,7 @@ public class MySqlAuthDAO implements AuthDAO{
                 }
                 results.add(row);
             }
-        } catch (DataAccessException | SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return results;
