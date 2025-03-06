@@ -50,7 +50,7 @@ public class MySqlUserDAO implements UserDAO{
             } else if (queryResult.size()>1) {
                 throw new RuntimeException("Multiple Users returned");
             }
-            Map<String,Object> result = queryResult.get(0);
+            Map<String,Object> result = queryResult.getFirst();
             fetchedUser=new UserData((String) result.get("username"), (String) result.get("password"), (String) result.get("email"));
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);

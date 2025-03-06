@@ -1,7 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import model.UserData;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -48,14 +47,14 @@ public class MySqlAuthDAO implements AuthDAO{
             if(queryResult.isEmpty()) {
                 return null;
             } else if (queryResult.size()>1) {
-                throw new RuntimeException("Multiple Users returned");
+                throw new RuntimeException("Multiple Auths returned");
             }
-            Map<String,Object> result = queryResult.get(0);
-            fetchedUser=new UserData((String) result.get("username"), (String) result.get("password"), (String) result.get("email"));
+            Map<String,Object> result = queryResult.getFirst();
+            fetchedAuth=new AuthData((String) result.get("authToken"), (String) result.get("username"));
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
-        return fetchedUser;
+        return fetchedAuth;
     }
 
     @Override
