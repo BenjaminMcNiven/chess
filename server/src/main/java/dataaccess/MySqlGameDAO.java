@@ -52,7 +52,7 @@ public class MySqlGameDAO implements GameDAO{
                 throw new RuntimeException("Multiple Games returned");
             }
             Map<String,Object> result = queryResult.getFirst();
-            fetchedGame=new GameData(Integer.parseInt((String) result.get("gameID")),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class));
+            fetchedGame=new GameData((Integer) result.get("gameID"),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class));
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -77,7 +77,17 @@ public class MySqlGameDAO implements GameDAO{
 
     @Override
     public void updateGame(GameData game) {
-
+        String updateGame = "UPDATE games set whiteUsername=?,blackUsername=?,gameName=?,game=? WHERE gameID=?;";
+        try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(updateGame)) {
+            statement.setString(5, String.valueOf(game.gameID()));
+            statement.setString(1, game.whiteUsername());
+            statement.setString(2, game.blackUsername());
+            statement.setString(3, game.gameName());
+            statement.setString(4, new Gson().toJson(game.game()));
+            statement.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final String[] createStatements = {
@@ -87,7 +97,7 @@ public class MySqlGameDAO implements GameDAO{
               `whiteUsername` varchar(256) NULL,
               `blackUsername` varchar(256) NULL,
               `gameName` varchar(256) NULL,
-              `game` TEXT NOT NULL
+              `game` LONGTEXT NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
