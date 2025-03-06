@@ -14,7 +14,7 @@ public class Server {
 
     public UserDAO userDAO=new MySqlUserDAO();
     public AuthDAO authDAO=new MySqlAuthDAO();
-    public GameDAO gameDAO=new MemoryGameDAO();
+    public GameDAO gameDAO=new MySqlGameDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
