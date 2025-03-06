@@ -7,16 +7,18 @@ import model.AuthData;
 import model.GameData;
 import server.JoinGameRequest;
 
-public class JoinGameService {
-    public AuthDAO authDAO;
+public class JoinGameService extends AuthenticatedService{
     public GameDAO gameDAO;
 
-    public JoinGameService(AuthDAO authdao, GameDAO gameDAO){
-        this.authDAO=authdao;
+    public JoinGameService(AuthDAO authDAO, GameDAO gameDAO){
+        super(authDAO);
         this.gameDAO=gameDAO;
     }
 
     public void joinGame(String authToken, JoinGameRequest request) throws DataAccessException {
+        if(unauthorized(authToken)){
+            throw new DataAccessException("Error: unauthorized");
+        }
         AuthData authData=authDAO.getAuth(authToken);
         GameData gameDat=gameDAO.getGame(request.gameID());
         switch (request.playerColor()){

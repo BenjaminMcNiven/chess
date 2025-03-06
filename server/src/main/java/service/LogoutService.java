@@ -1,16 +1,19 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 
-public class LogoutService {
+public class LogoutService extends AuthenticatedService{
 
-    public AuthDAO authDAO;
 
     public LogoutService(AuthDAO authDAO) {
-        this.authDAO = authDAO;
+        super(authDAO);
     }
 
-    public void logout(String authToken){
+    public void logout(String authToken) throws DataAccessException {
+        if(unauthorized(authToken)){
+            throw new DataAccessException("Error: unauthorized");
+        }
         authDAO.deleteAuth(authToken);
     }
 }

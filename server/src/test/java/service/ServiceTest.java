@@ -92,17 +92,29 @@ class ServiceTest {
     @Order(7)
     @Test
     void createGamePositive() {
-        CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
-        int gameID = createGameService.createGame("game");
-        Collection<GameData> games = gameDAO.listGames();
-        Assertions.assertTrue(games.contains(new GameData(gameID, null, null, "game", new ChessGame())));
+        try {
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
+            int gameID = createGameService.createGame(authToken.authToken(), "game");
+            Collection<GameData> games = gameDAO.listGames();
+            Assertions.assertTrue(games.contains(new GameData(gameID, null, null, "game", new ChessGame())));
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
     }
     @Order(8)
     @Test
     void listGamesPositive() {
-        ListGamesService listGamesService=new ListGamesService(gameDAO);
-        Collection<GameData> games=listGamesService.listGames();
-        Assertions.assertEquals(1, games.size());
+        try {
+            ListGamesService listGamesService=new ListGamesService(authDAO,gameDAO);
+            LoginService loginService = new LoginService(userDAO,authDAO);
+            AuthData authToken = loginService.login(new UserData("username","password",null));
+            Collection<GameData> games=listGamesService.listGames(authToken.authToken());
+            Assertions.assertEquals(1, games.size());
+        } catch (DataAccessException e) {
+            Assertions.fail();
+        }
     }
     @Order(9)
     @Test
@@ -112,7 +124,7 @@ class ServiceTest {
             LoginService loginService = new LoginService(userDAO,authDAO);
             AuthData authToken = loginService.login(new UserData("username","password",null));
             CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
-            int gameID = createGameService.createGame("game");
+            int gameID = createGameService.createGame(authToken.authToken(), "game");
             joinGameService.joinGame(authToken.authToken(),new JoinGameRequest("WHITE",gameID));
             Collection<GameData> games = gameDAO.listGames();
             Assertions.assertTrue(games.contains(new GameData(gameID, "username", null, "game", new ChessGame())));
@@ -128,7 +140,7 @@ class ServiceTest {
             LoginService loginService = new LoginService(userDAO,authDAO);
             AuthData auth = loginService.login(new UserData("username","password",null));
             CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
-            int gameID = createGameService.createGame("game");
+            int gameID = createGameService.createGame(auth.authToken(), "game");
             joinGameService.joinGame(auth.authToken(),new JoinGameRequest("WHITE",gameID));
             Assertions.assertThrows(DataAccessException.class,()->joinGameService.joinGame(auth.authToken(),new JoinGameRequest("WHITE",gameID)));
         } catch (DataAccessException e) {
@@ -141,25 +153,5 @@ class ServiceTest {
         ClearDatabaseService clearDatabaseService=new ClearDatabaseService(userDAO,authDAO,gameDAO);
         clearDatabaseService.clear();
         Assertions.assertEquals(0, gameDAO.listGames().size());
-    }
-    @Order(11)
-    @Test
-    void authenticatePositive() {
-        try {
-            AuthenticateService authenticateService=new AuthenticateService(authDAO);
-            LoginService loginService = new LoginService(userDAO,authDAO);
-            AuthData authToken = loginService.login(new UserData("username","password",null));
-            Assertions.assertTrue(authenticateService.authenticated(authToken.authToken()));
-        } catch (DataAccessException e) {
-            Assertions.fail();
-        }
-
-
-    }
-    @Order(12)
-    @Test
-    void authenticateNegative() {
-        AuthenticateService authenticateService=new AuthenticateService(authDAO);
-        Assertions.assertFalse(authenticateService.authenticated("test"));
     }
 }

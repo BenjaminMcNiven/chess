@@ -30,15 +30,6 @@ public class Server {
     }
 
     private void createRoutes(){
-        Spark.before((req, res) -> {
-            String path = req.pathInfo();
-            if (!path.equals("/db") && !path.equals("/user") && !(path.equals("/session") && req.requestMethod().equals("POST"))) {
-                if (!authenticated(req.headers("Authorization"))) {
-                    Spark.halt(401, new Gson().toJson(Map.of("message", "Error: unauthorized")));
-                }
-            }
-        });
-
         Spark.delete("/db", this::clearDatabase);
         Spark.post("/user",this::registerUser);
         Spark.post("/session",this::loginUser);
@@ -56,14 +47,6 @@ public class Server {
         return false;
     }
 
-    public boolean authenticated(String authToken){
-        AuthenticateService authenticateService=new AuthenticateService(authDAO);
-        if(authToken==null || authToken.isEmpty()){
-            return false;
-        }
-        return authenticateService.authenticated(authToken);
-    }
-
     private Object clearDatabase(Request req,Response res){
         ClearDatabaseService clearDatabaseService=new ClearDatabaseService(userDAO,authDAO,gameDAO);
         try{
@@ -75,6 +58,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
         }
     }
+
     private Object registerUser(Request req,Response res){
         var request = new Gson().fromJson(req.body(), UserData.class);
         if(isNullOrEmpty(request.username()) || isNullOrEmpty(request.password()) || isNullOrEmpty(request.email())){
@@ -93,6 +77,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
         }
     }
+
     private Object loginUser(Request req,Response res){
         var request = new Gson().fromJson(req.body(), UserData.class);
         if(isNullOrEmpty(request.username()) || isNullOrEmpty(request.password())){
@@ -111,12 +96,9 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
         }
     }
+
     private Object logoutUser(Request req,Response res){
         String authToken = req.headers("Authorization");
-        if(isNullOrEmpty(authToken)){
-            res.status(401);
-            return new Gson().toJson(Map.of("message", "Error: unauthorized"));
-        }
         try{
             LogoutService service=new LogoutService(authDAO);
             service.logout(authToken);
@@ -125,17 +107,25 @@ public class Server {
         } catch (RuntimeException e) {
             res.status(500);
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
+        } catch (DataAccessException e) {
+            res.status(401);
+            return new Gson().toJson(Map.of("message", e.getMessage()));
         }
     }
+
     private Object listGames(Request req,Response res){
-        ListGamesService service=new ListGamesService(gameDAO);
+        ListGamesService service=new ListGamesService(authDAO,gameDAO);
         try{
-            return new Gson().toJson(Map.of("games", service.listGames()));
+            return new Gson().toJson(Map.of("games", service.listGames(req.headers("Authorization"))));
         } catch (RuntimeException e) {
             res.status(500);
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
+        } catch (DataAccessException e) {
+            res.status(401);
+            return new Gson().toJson(Map.of("message", e.getMessage()));
         }
     }
+
     private Object createGame(Request req,Response res){
         var request = new Gson().fromJson(req.body(), GameData.class);
         if(isNullOrEmpty(request.gameName())){
@@ -144,12 +134,16 @@ public class Server {
         }
         try{
             CreateGameService service=new CreateGameService(authDAO,gameDAO);
-            return new Gson().toJson(Map.of("gameID",service.createGame(request.gameName())));
+            return new Gson().toJson(Map.of("gameID",service.createGame(req.headers("Authorization"), request.gameName())));
         } catch (RuntimeException e) {
             res.status(500);
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
+        } catch (DataAccessException e) {
+            res.status(401);
+            return new Gson().toJson(Map.of("message", e.getMessage()));
         }
     }
+
     private Object joinGame(Request req,Response res){
         var request = new Gson().fromJson(req.body(), JoinGameRequest.class);
         String authToken=req.headers("Authorization");
@@ -167,14 +161,18 @@ public class Server {
             res.body("");
             return res.body();
         }catch (DataAccessException e){
-            res.status(403);
-            return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
+            if(e.getMessage().contains("Error: unauthorized")){
+                res.status(401);
+            }
+            else res.status(403);
+            return new Gson().toJson(Map.of("message", e.getMessage()));
         }
         catch (RuntimeException e) {
             res.status(500);
             return new Gson().toJson(Map.of("message", "Error: "+e.getMessage()));
         }
     }
+
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
