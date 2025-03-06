@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.MethodOrderer;
+import org.mindrot.jbcrypt.BCrypt;
 import server.JoinGameRequest;
 
 import java.util.Collection;
@@ -37,7 +38,9 @@ class ServiceTest {
             AuthData newAuth=registerService.register(new UserData("username", "password", "email@email.com"));
             UserData expectedUserData=new UserData("username","password","email@email.com");
             UserData observedUserData=userDAO.getUser("username");
-            Assertions.assertEquals(expectedUserData,observedUserData);
+            Assertions.assertEquals(expectedUserData.email(),observedUserData.email());
+            Assertions.assertEquals(expectedUserData.username(),observedUserData.username());
+            Assertions.assertTrue(BCrypt.checkpw(expectedUserData.password(),observedUserData.password()));
             Assertions.assertNotNull(newAuth);
         }catch (Exception e){
             Assertions.fail();
