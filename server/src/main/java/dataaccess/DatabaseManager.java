@@ -1,10 +1,7 @@
 package dataaccess;
 
-import org.mindrot.jbcrypt.BCrypt;
-
 import java.sql.*;
 import java.util.Properties;
-
 
 public class DatabaseManager {
     private static final String DATABASE_NAME;
@@ -21,8 +18,6 @@ public class DatabaseManager {
                 if (propStream == null) {
                     throw new Exception("Unable to load db.properties");
                 }
-                BCrypt.checkpw("providedClearTextPassword", "hashedPassword");
-
                 Properties props = new Properties();
                 props.load(propStream);
                 DATABASE_NAME = props.getProperty("db.name");

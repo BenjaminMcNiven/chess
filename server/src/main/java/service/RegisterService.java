@@ -19,6 +19,7 @@ public class RegisterService {
 
     public AuthData register(UserData request) throws DataAccessException {
         UserData user = userDAO.getUser(request.username());
+        System.out.println(user);
         if(user!=null){
             throw new DataAccessException("Error: already taken");
         }

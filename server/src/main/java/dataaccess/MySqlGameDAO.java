@@ -2,13 +2,14 @@ package dataaccess;
 
 import model.GameData;
 
+import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
 public class MySqlGameDAO implements GameDAO{
 
-    public MySqlGameDAO() throws Exception {
+    public MySqlGameDAO() throws DataAccessException {
         configureDatabase();
     }
 
