@@ -44,7 +44,7 @@ public class MySqlGameDAO implements GameDAO{
               `whiteUsername` varchar(256) NULL,
               `blackUsername` varchar(256) NULL,
               `gameName` varchar(256) NULL,
-              'gameAndBoard' TEXT NOT NULL
+              'game' TEXT NOT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
