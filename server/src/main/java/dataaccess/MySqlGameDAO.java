@@ -77,7 +77,6 @@ public class MySqlGameDAO extends MySQLDAO implements GameDAO{
         try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getGame)) {
             List<Map<String, Object>> queryResult = executeQuerySQL(statement);
             for(Map<String, Object> result:queryResult){
-                System.out.println(result);
                 games.add(new GameData((Integer) result.get("gameID"),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class)));
             }
         } catch (SQLException | DataAccessException e) {
