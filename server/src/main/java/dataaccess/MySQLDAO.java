@@ -9,7 +9,7 @@ import java.util.Map;
 
 public abstract class MySQLDAO {
 
-    public void configureDatabase(String[] statements) throws RuntimeException {
+    public void configureDatabase(String[] statements){
         try{
             DatabaseManager.createDatabase();
             for (var statement : statements) {
