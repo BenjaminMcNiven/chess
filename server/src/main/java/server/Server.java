@@ -164,7 +164,7 @@ public class Server {
             if(e.getMessage().contains("Error: unauthorized")){
                 res.status(401);
             }
-            else res.status(403);
+            else {res.status(403);}
             return new Gson().toJson(Map.of("message", e.getMessage()));
         }
         catch (RuntimeException e) {

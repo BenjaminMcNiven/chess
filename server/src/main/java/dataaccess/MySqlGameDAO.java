@@ -63,7 +63,12 @@ public class MySqlGameDAO extends MySQLDAO implements GameDAO{
                 throw new RuntimeException("Multiple Games returned");
             }
             Map<String,Object> result = queryResult.getFirst();
-            fetchedGame=new GameData((Integer) result.get("gameID"),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class));
+            ChessGame game = new Gson().fromJson((String) result.get("game"), ChessGame.class);
+            int gameID=(Integer) result.get("gameID");
+            String whiteUsername = (String)result.get("whiteUsername");
+            String blackUsername = (String)result.get("blackUsername");
+            String gameName = (String)result.get("gameName");
+            fetchedGame=new GameData(gameID,whiteUsername,blackUsername,gameName,game);
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -77,7 +82,12 @@ public class MySqlGameDAO extends MySQLDAO implements GameDAO{
         try (var conn = DatabaseManager.getConnection(); PreparedStatement statement = conn.prepareStatement(getGame)) {
             List<Map<String, Object>> queryResult = executeQuerySQL(statement);
             for(Map<String, Object> result:queryResult){
-                games.add(new GameData((Integer) result.get("gameID"),(String)result.get("whiteUsername"),(String) result.get("blackUsername"),(String)result.get("gameName"),new Gson().fromJson((String) result.get("game"), ChessGame.class)));
+                ChessGame game = new Gson().fromJson((String) result.get("game"), ChessGame.class);
+                int gameID=(Integer) result.get("gameID");
+                String whiteUsername = (String)result.get("whiteUsername");
+                String blackUsername = (String)result.get("blackUsername");
+                String gameName = (String)result.get("gameName");
+                games.add(new GameData(gameID,whiteUsername,blackUsername,gameName,game));
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);

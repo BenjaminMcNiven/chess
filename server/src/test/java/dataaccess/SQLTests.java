@@ -38,7 +38,7 @@ public class SQLTests {
 
     @Test
     @Order(1)
-    public void testCreateAuth_Success() {
+    public void testCreateAuthSuccess() {
         AuthData auth = new AuthData("token123", "user1");
         Assertions.assertDoesNotThrow(() -> authDAO.createAuth(auth));
 
@@ -50,7 +50,7 @@ public class SQLTests {
 
     @Test
     @Order(2)
-    public void testCreateAuth_Failure_DuplicateToken() {
+    public void testCreateAuthFailure() {
         AuthData auth = new AuthData("token123", "user1");
         authDAO.createAuth(auth);
 
@@ -60,7 +60,7 @@ public class SQLTests {
 
     @Test
     @Order(3)
-    public void testGetAuth_Success() {
+    public void testGetAuthSuccess() {
         AuthData auth = new AuthData("token456", "user2");
         authDAO.createAuth(auth);
 
@@ -72,14 +72,14 @@ public class SQLTests {
 
     @Test
     @Order(4)
-    public void testGetAuth_Failure_NonExistentToken() {
+    public void testGetAuthFailure() {
         AuthData retrieved = authDAO.getAuth("nonexistent");
         Assertions.assertNull(retrieved);
     }
 
     @Test
     @Order(5)
-    public void testDeleteAuth_Success() {
+    public void testDeleteAuthSuccess() {
         AuthData auth = new AuthData("token789", "user3");
         authDAO.createAuth(auth);
 
@@ -89,13 +89,13 @@ public class SQLTests {
 
     @Test
     @Order(6)
-    public void testDeleteAuth_Failure_NonExistentToken() {
+    public void testDeleteAuthFailure() {
         Assertions.assertDoesNotThrow(() -> authDAO.deleteAuth("nonexistent"));
     }
 
     @Test
     @Order(7)
-    public void testClear_Success() {
+    public void testClearSuccess() {
         authDAO.createAuth(new AuthData("token1", "userA"));
         authDAO.createAuth(new AuthData("token2", "userB"));
 
@@ -107,7 +107,7 @@ public class SQLTests {
 
     @Test
     @Order(8)
-    public void testCreateUser_Success() {
+    public void testCreateUserSuccess() {
         UserData user = new UserData("user1", "password123", "user1@example.com");
         Assertions.assertDoesNotThrow(() -> userDAO.createUser(user));
 
@@ -120,7 +120,7 @@ public class SQLTests {
 
     @Test
     @Order(9)
-    public void testCreateUser_Failure_DuplicateUsername() {
+    public void testCreateUserFailure() {
         UserData user = new UserData("user1", "password123", "user1@example.com");
         userDAO.createUser(user);
 
@@ -130,7 +130,7 @@ public class SQLTests {
 
     @Test
     @Order(10)
-    public void testGetUser_Success() {
+    public void testGetUserSuccess() {
         UserData user = new UserData("user2", "securePass", "user2@example.com");
         userDAO.createUser(user);
 
@@ -143,14 +143,14 @@ public class SQLTests {
 
     @Test
     @Order(11)
-    public void testGetUser_Failure_NonExistentUsername() {
+    public void testGetUserFailure() {
         UserData retrieved = userDAO.getUser("nonexistent");
         Assertions.assertNull(retrieved);
     }
 
     @Test
     @Order(12)
-    public void testUserClear_Success() {
+    public void testUserClearSuccess() {
         userDAO.createUser(new UserData("userA", "passA", "userA@example.com"));
         userDAO.createUser(new UserData("userB", "passB", "userB@example.com"));
         userDAO.clear();
@@ -161,7 +161,7 @@ public class SQLTests {
 
     @Test
     @Order(13)
-    void testCreateGame_Success() {
+    void testCreateGameSuccess() {
         ChessGame chessGame = new ChessGame();
         GameData game = new GameData(1, "whitePlayer", "blackPlayer", "Friendly Match", chessGame);
 
@@ -177,7 +177,7 @@ public class SQLTests {
 
     @Test
     @Order(14)
-    void testCreateGame_DuplicateID() {
+    void testCreateGameFailure() {
         ChessGame chessGame = new ChessGame();
         GameData game = new GameData(2, "playerA", "playerB", "Game 2", chessGame);
         gameDAO.createGame(game);
@@ -187,7 +187,7 @@ public class SQLTests {
 
     @Test
     @Order(15)
-    void testGetGame_NonExistent() {
+    void testGetGameFailure() {
         Assertions.assertNull(gameDAO.getGame(999));
     }
 
@@ -204,7 +204,7 @@ public class SQLTests {
 
     @Test
     @Order(17)
-    void testUpdateGame_Success() {
+    void testUpdateGameSuccess() {
         ChessGame newGameState = new ChessGame();
         GameData game = new GameData(1, null, null, "Updated Game", newGameState);
         Assertions.assertDoesNotThrow(() -> gameDAO.createGame(game));
