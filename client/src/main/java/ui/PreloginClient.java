@@ -2,8 +2,12 @@ package ui;
 
 public class PreloginClient implements Client{
 
-    public PreloginClient(String serverURL){
+//    private final ServerFacade server;
+    private final String serverURL;
 
+    public PreloginClient(String serverURL){
+//        server = new ServerFacade(serverUrl);
+        this.serverURL= serverURL;
     }
 
     @Override
