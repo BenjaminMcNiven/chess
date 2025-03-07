@@ -9,10 +9,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySqlAuthDAO implements AuthDAO{
+public class MySqlAuthDAO extends MySQLDAO implements AuthDAO{
 
     public MySqlAuthDAO() {
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS  auths (
+              `authToken` varchar(256) NOT NULL PRIMARY KEY,
+              `username` varchar(256) NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        };
+        configureDatabase(createStatements);
     }
     
     @Override
@@ -68,43 +76,4 @@ public class MySqlAuthDAO implements AuthDAO{
         }
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS  auths (
-              `authToken` varchar(256) NOT NULL PRIMARY KEY,
-              `username` varchar(256) NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
-
-    private void configureDatabase() throws RuntimeException {
-        try{
-            DatabaseManager.createDatabase();
-            for (var statement : createStatements) {
-                var conn = DatabaseManager.getConnection();
-                var preparedStatement = conn.prepareStatement(statement);
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(String.format("Unable to configure database: %s", e.getMessage()));
-        }
-    }
-
-    public List<Map<String, Object>> executeQuerySQL(PreparedStatement statement) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (var resultSet = statement.executeQuery()) {
-            var metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            while (resultSet.next()) {
-                Map<String, Object> row = new HashMap<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), resultSet.getObject(i));
-                }
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return results;
-    }
 }

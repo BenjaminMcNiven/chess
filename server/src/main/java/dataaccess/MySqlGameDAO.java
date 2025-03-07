@@ -8,10 +8,21 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
-public class MySqlGameDAO implements GameDAO{
+public class MySqlGameDAO extends MySQLDAO implements GameDAO{
 
     public MySqlGameDAO(){
-        configureDatabase();
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS  games (
+              `gameID` int NOT NULL PRIMARY KEY,
+              `whiteUsername` varchar(256) NULL,
+              `blackUsername` varchar(256) NULL,
+              `gameName` varchar(256) NULL,
+              `game` LONGTEXT NOT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        };
+        configureDatabase(createStatements);
     }
 
     @Override
@@ -90,46 +101,4 @@ public class MySqlGameDAO implements GameDAO{
         }
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS  games (
-              `gameID` int NOT NULL PRIMARY KEY,
-              `whiteUsername` varchar(256) NULL,
-              `blackUsername` varchar(256) NULL,
-              `gameName` varchar(256) NULL,
-              `game` LONGTEXT NOT NULL
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
-
-    private void configureDatabase() throws RuntimeException {
-        try{
-            DatabaseManager.createDatabase();
-            for (var statement : createStatements) {
-                var conn = DatabaseManager.getConnection();
-                var preparedStatement = conn.prepareStatement(statement);
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(String.format("Unable to configure database: %s", e.getMessage()));
-        }
-    }
-
-    public List<Map<String, Object>> executeQuerySQL(PreparedStatement statement) {
-        List<Map<String, Object>> results = new ArrayList<>();
-        try (var resultSet = statement.executeQuery()) {
-            var metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            while (resultSet.next()) {
-                Map<String, Object> row = new HashMap<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), resultSet.getObject(i));
-                }
-                results.add(row);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return results;
-    }
 }
