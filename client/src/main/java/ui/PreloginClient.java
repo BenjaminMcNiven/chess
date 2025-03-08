@@ -5,11 +5,11 @@ import server.ServerFacade;
 
 public class PreloginClient implements Client {
 
-    //    private final ServerFacade server;
+    private final ServerFacade server;
     private final String serverURL;
 
     public PreloginClient(String serverURL) {
-//        server = new ServerFacade(serverUrl);
+        server = new ServerFacade(serverURL);
         this.serverURL = serverURL;
     }
 
