@@ -14,6 +14,40 @@ public class ServerFacade {
         serverUrl = url;
     }
 
+    public void clearDatabase() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null);
+    }
+
+    public void register() throws ResponseException {
+        var path = "/user";
+        this.makeRequest("POST", path, null, null);
+    }
+
+    public void loginUser() throws ResponseException {
+        var path = "/session";
+        this.makeRequest("POST", path, null, null);
+    }
+
+    public void logoutUser() throws ResponseException {
+        var path = "/session";
+        this.makeRequest("DELETE", path, null, null);
+    }
+
+    public void listGames() throws ResponseException {
+        var path = "/game";
+        this.makeRequest("GET", path, null, null);
+    }
+
+    public void createGame() throws ResponseException {
+        var path = "/game";
+        this.makeRequest("POST", path, null, null);
+    }
+
+    public void joinGame() throws ResponseException {
+        var path = "/game";
+        this.makeRequest("PUT", path, null, null);
+    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
