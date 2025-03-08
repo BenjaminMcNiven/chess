@@ -2,6 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import model.AuthData;
+import model.UserData;
 
 import java.io.*;
 import java.net.*;
@@ -19,14 +21,14 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, null, null);
     }
 
-    public void register() throws ResponseException {
+    public UserData register(UserData newUser) throws ResponseException {
         var path = "/user";
-        this.makeRequest("POST", path, null, null);
+        return this.makeRequest("POST", path, newUser, UserData.class);
     }
 
-    public void loginUser() throws ResponseException {
+    public UserData loginUser() throws ResponseException {
         var path = "/session";
-        this.makeRequest("POST", path, null, null);
+        this.makeRequest("POST", path, UserData.class, AuthData.class);
     }
 
     public void logoutUser() throws ResponseException {
