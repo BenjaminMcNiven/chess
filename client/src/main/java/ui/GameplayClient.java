@@ -50,13 +50,13 @@ public class GameplayClient implements Client{
         return state;
     }
 
-    public String redraw() {
+    public String redraw() throws ResponseException {
         String header=drawHeaders();
         String board=drawBoard();
         return header+board+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
 
-    private String drawBoard() {
+    private String drawBoard() throws ResponseException {
         StringBuilder result = new StringBuilder();
         ChessBoard board = server.getActiveGame().game().getBoard();
         int reversed = state.equals(State.WHITE) || state.equals(State.OBSERVE) ? 1 : -1;

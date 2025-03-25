@@ -27,6 +27,11 @@ public class ServerFacade {
         serverUrl = url;
     }
 
+    public void clearDatabase() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null);
+    }
+
     public AuthData register(UserData newUser) throws ResponseException {
         var path = "/user";
         AuthData newAuth=this.makeRequest("POST", path, newUser, AuthData.class);
@@ -87,11 +92,11 @@ public class ServerFacade {
         activeGame=gameID;
     }
 
-    public GameData getActiveGame(){
+    public GameData getActiveGame() throws ResponseException {
         if(activeGame!=null){
             return gameMap.get(activeGame);
         }
-        return null;
+        throw new ResponseException(400,"No Active Game");
     }
 
     public void createGame(String gameName) throws ResponseException {
@@ -166,17 +171,6 @@ public class ServerFacade {
         T response = null;
         try (InputStream respBody = http.getInputStream()) {
             InputStreamReader reader = new InputStreamReader(respBody);
-
-//            BufferedReader br = new BufferedReader(reader);
-//
-//            // Read and print the raw JSON response
-//            StringBuilder rawResponse = new StringBuilder();
-//            String line;
-//            while ((line = br.readLine()) != null) {
-//                rawResponse.append(line).append("\n");
-//            }
-//            System.out.println("Raw JSON Response: " + rawResponse.toString());
-
             if (responseClass != null) {
                 response = new Gson().fromJson(reader, responseClass);
             }
