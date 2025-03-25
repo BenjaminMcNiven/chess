@@ -35,7 +35,7 @@ public class ServerFacadeTests {
 
     @Order(1)
     @Test
-    void register_Success() throws ResponseException {
+    void registerSuccess() throws ResponseException {
         UserData newUser = new UserData("testUser", "password", "email");
         AuthData result = facade.register(newUser);
 
