@@ -45,19 +45,33 @@ public class PreloginClient implements Client {
     public String register(String[] inputs) throws ResponseException {
         if(inputs.length==3) {
             UserData newUser = new UserData(inputs[0], inputs[1], inputs[2]);
-            var resp = server.register(newUser);
-            state=State.SIGNEDIN;
-            return "You successfully registered "+resp.username()+". Type help for more assistance";
+            try {
+                var resp = server.register(newUser);
+                state=State.SIGNEDIN;
+                return "You successfully registered "+resp.username()+". Type help for more assistance";
+            } catch (ResponseException e) {
+                if(e.getMessage().contains("Forbidden")){
+                    throw new ResponseException(403,"Username already taken. Try again");
+                }
+                throw new RuntimeException(e);
+            }
         }
         throw new ResponseException(400, "Expected register <USERNAME> <PASSWORD> <EMAIL>");
     }
 
     public String login(String[] inputs) throws ResponseException {
         if(inputs.length==2) {
-            UserData newUser = new UserData(inputs[0], inputs[1],null);
-            var resp = server.loginUser(newUser);
-            state=State.SIGNEDIN;
-            return "You successfully logged in as "+resp.username()+". Type help for more assistance";
+            try {
+                UserData newUser = new UserData(inputs[0], inputs[1],null);
+                var resp = server.loginUser(newUser);
+                state=State.SIGNEDIN;
+                return "You successfully logged in as "+resp.username()+". Type help for more assistance";
+            } catch (ResponseException e) {
+                if(e.getMessage().contains("Unauthorized")){
+                    throw new ResponseException(403,"Invalid Username and Password. Try again");
+                }
+                throw new RuntimeException(e);
+            }
         }
         throw new ResponseException(400, "Expected login <USERNAME> <PASSWORD>");
     }
