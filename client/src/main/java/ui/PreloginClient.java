@@ -21,8 +21,8 @@ public class PreloginClient implements Client {
         return """
                 register <USERNAME> <PASSWORD> <EMAIL> - to create an account
                 login <USERNAME> <PASSWORD> - to play chess
-                quit - to exit
-                help - to see possible commands""";
+                help - to see possible commands
+                quit - to exit""";
     }
 
     @Override
@@ -34,7 +34,7 @@ public class PreloginClient implements Client {
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
-                default -> "";
+                default -> help();
             };
         } catch (Exception e) {
             return e.getMessage();
@@ -46,7 +46,7 @@ public class PreloginClient implements Client {
             UserData newUser = new UserData(inputs[0], inputs[1], inputs[2]);
             var resp = server.register(newUser);
             state=State.SIGNEDIN;
-            return "You successfully registered "+resp.username();
+            return "You successfully registered "+resp.username()+". Type help for more assistance";
         }
         throw new ResponseException(400, "Expected register <USERNAME> <PASSWORD> <EMAIL>");
     }
@@ -56,7 +56,7 @@ public class PreloginClient implements Client {
             UserData newUser = new UserData(inputs[0], inputs[1],null);
             var resp = server.loginUser(newUser);
             state=State.SIGNEDIN;
-            return "You successfully logged in as "+resp.username();
+            return "You successfully logged in as "+resp.username()+". Type help for more assistance";
         }
         throw new ResponseException(400, "Expected login <USERNAME> <PASSWORD>");
     }

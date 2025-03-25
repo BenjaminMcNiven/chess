@@ -73,6 +73,10 @@ public class ServerFacade {
         }
     }
 
+    public GameData getGameFromMap(int gameID){
+        return gameMap.get(gameID);
+    }
+
     public void createGame(String gameName) throws ResponseException {
         if(authToken!=null){
             GameData newGame = new GameData(null,null,null,gameName,null);
@@ -87,13 +91,15 @@ public class ServerFacade {
     public void joinGame(String color, int gameID) throws ResponseException {
         if(authToken!=null) {
             if(gameMap==null){
-                throw new ResponseException(500, "Games not yet listed!");
+                throw new ResponseException(500, "Games not yet listed! List the games to find a game to join");
             }
-            JoinGameRequest newJoin = new JoinGameRequest(color, gameID);
+            JoinGameRequest newJoin = new JoinGameRequest(color, gameMap.get(gameID).gameID());
             var path = "/game";
             this.makeRequest("PUT", path, newJoin, null);
         }
-        throw new ResponseException(400,"Unauthorized");
+        else{
+            throw new ResponseException(400,"Unauthorized");
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object request, Type responseClass) throws ResponseException {

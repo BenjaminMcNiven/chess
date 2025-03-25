@@ -30,14 +30,14 @@ public class PostloginClient implements Client{
                 join <ID> [WHITE|BLACK] - to join a game
                 observe <ID> - to spectate a game
                 logout - to return to login
-                quit - to exit
-                help - to see possible commands""";
+                help - to see possible commands
+                quit - to exit""";
     }
 
     @Override
     public String eval(String input) {
         try {
-            var tokens = input.toLowerCase().split(" ");
+            var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
@@ -65,17 +65,22 @@ public class PostloginClient implements Client{
         if(state==State.SIGNEDIN){
             StringBuilder gamesList= new StringBuilder("Games:");
             HashMap<Integer, GameData> gamesMap= server.listGames();
-            gamesMap.forEach((key,value)->
-                gamesList.append("\n   ").append(key).append(": ").append(value.gameName())
-            );
+            gamesMap.forEach((key,value)-> {
+                gamesList.append("\n   ").append(key).append(": ").append(value.gameName());
+                gamesList.append("\n      ").append("WHITE: ").append(value.whiteUsername() != null ? value.whiteUsername() : "Not claimed");
+                gamesList.append("\n      ").append("BLACK: ").append(value.blackUsername() != null ? value.blackUsername() : "Not claimed");
+            });
             return gamesList.toString();
         }
         throw new ResponseException(400,"Unauthorized");
     }
 
     public String join(String[] input) throws ResponseException {
+        if(input.length!=2 || !input[1].equals("WHITE") && !input[1].equals("BLACK")){
+            throw new ResponseException(400,"Expected: join <ID> WHITE|BLACK");
+        }
         if(state==State.SIGNEDIN) {
-            server.joinGame(input[0], Integer.parseInt(input[1]));
+            server.joinGame(input[1], Integer.parseInt(input[0]));
             state=State.INGAME;
             return "Successfully joined game " + input[0];
         }
@@ -83,6 +88,9 @@ public class PostloginClient implements Client{
     }
 
     public String observe(String[] input) throws ResponseException {
+        if(input.length!=1){
+            throw new ResponseException(400,"Expected: observe <ID>");
+        }
         if(state==State.SIGNEDIN) {
 //        Insert logic to switch to gameplay client/drawBoard interface
             state=State.OBSERVE;
@@ -95,7 +103,7 @@ public class PostloginClient implements Client{
         if(state==State.SIGNEDIN) {
             server.logoutUser();
             state=State.SIGNEDOUT;
-            return "Logged out";
+            return "Logged out. Type help for more assistance";
         }
         throw new ResponseException(400,"Unauthorized");
     }

@@ -3,6 +3,6 @@ package ui;
 public enum State {
     SIGNEDOUT,
     SIGNEDIN,
-    INGAME,
-    OBSERVE
+    WHITE,
+    BLACK
 }
