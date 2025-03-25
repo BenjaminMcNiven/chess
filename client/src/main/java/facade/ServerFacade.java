@@ -1,4 +1,4 @@
-package server;
+package facade;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -6,6 +6,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.JoinGameRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
