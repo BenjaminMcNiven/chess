@@ -10,6 +10,9 @@ public class REPL{
 
     private Client client;
     private final ServerFacade server;
+    private final State obs=State.OBSERVE;
+    private final State bl=State.BLACK;
+    private final State w=State.WHITE;
 
     public REPL(String serverUrl) {
         server=new ServerFacade(serverUrl);
@@ -33,7 +36,7 @@ public class REPL{
                 else if(client.getState()==State.SIGNEDOUT && client.getClass()!=PreloginClient.class){
                     client=new PreloginClient(server);
                 }
-                else if((client.getState()==State.OBSERVE ||client.getState()==State.WHITE ||client.getState()==State.BLACK) && client.getClass()!=GameplayClient.class){
+                else if((client.getState()==obs ||client.getState()==w ||client.getState()==bl) && client.getClass()!=GameplayClient.class){
                     client=new GameplayClient(server,client.getState());
                     System.out.println(((GameplayClient)client).redraw());
                 }

@@ -46,14 +46,14 @@ public class ServerFacadeTests {
 
     @Order(2)
     @Test
-    void register_Failure() {
+    void registerFailure() {
         UserData newUser = new UserData(null, null,null);
         assertThrows(ResponseException.class, () -> facade.register(newUser));
     }
 
     @Order(3)
     @Test
-    void loginUser_Success() throws ResponseException {
+    void loginUserSuccess() throws ResponseException {
         UserData loginUser = new UserData("testUser", "password",null);
         AuthData result = facade.loginUser(loginUser);
 
@@ -64,27 +64,32 @@ public class ServerFacadeTests {
 
     @Order(4)
     @Test
-    void loginUser_Failure() {
+    void loginUserFailure() {
         UserData loginUser = new UserData("wrongUser", "wrongPassword",null);
         assertThrows(ResponseException.class, () -> facade.loginUser(loginUser));
     }
 
     @Order(5)
     @Test
-    void logoutUser_Success() throws ResponseException {
+    void logoutUserSuccess() throws ResponseException {
         facade.logoutUser();
         assertThrows(ResponseException.class,()->facade.getActiveGame());
     }
 
     @Order(6)
     @Test
-    void observeGame_Failure() {
+    void observeGameFailure() {
         assertThrows(ResponseException.class, () -> facade.observe(1));
+        try{
+            facade.observe(1);
+        } catch (ResponseException e) {
+            assert(e.getStatusCode()>300);
+        }
     }
 
     @Order(7)
     @Test
-    void listGames_Success() throws ResponseException {
+    void listGamesSuccess() throws ResponseException {
         facade.register(new UserData("testingUser", "password","email"));
         HashMap<Integer, GameData> result = facade.listGames();
         assertNotNull(result);
@@ -92,7 +97,7 @@ public class ServerFacadeTests {
 
     @Order(8)
     @Test
-    void listGames_Failure() {
+    void listGamesFailure() {
         try {
             facade.logoutUser();
         } catch (ResponseException e) {
@@ -103,7 +108,7 @@ public class ServerFacadeTests {
 
     @Order(9)
     @Test
-    void observeGame_Success() throws ResponseException {
+    void observeGameSuccess() throws ResponseException {
         facade.register(new UserData("testUsers", "password","email"));
         facade.listGames();
         assertDoesNotThrow(() -> facade.observe(1));
@@ -111,14 +116,14 @@ public class ServerFacadeTests {
 
     @Order(10)
     @Test
-    void createGame_Success() throws ResponseException {
+    void createGameSuccess() throws ResponseException {
         facade.register(new UserData("testUses", "password","email"));
         assertDoesNotThrow(() -> facade.createGame("TestGame"));
     }
 
     @Order(11)
     @Test
-    void getActiveGame_Success() throws ResponseException {
+    void getActiveGameSuccess() throws ResponseException {
         facade.register(new UserData("testUse", "password","email"));
         facade.listGames();
         facade.observe(1);
@@ -127,20 +132,20 @@ public class ServerFacadeTests {
 
     @Order(12)
     @Test
-    void getActiveGame_Failure() throws ResponseException {
+    void getActiveGameFailure() throws ResponseException {
         facade.logoutUser();
         assertThrows(ResponseException.class, ()->facade.getActiveGame());
     }
 
     @Order(13)
     @Test
-    void createGame_Failure(){
+    void createGameFailure(){
         assertThrows(ResponseException.class, () -> facade.createGame("TestGame"));
     }
 
     @Order(14)
     @Test
-    void joinGame_Success() throws ResponseException {
+    void joinGameSuccess() throws ResponseException {
         facade.register(new UserData("user", "password","email"));
 //        Create a bunch of new games to make sure the game we try to join is free
         for(int count=0; count<20; count++){
@@ -152,7 +157,7 @@ public class ServerFacadeTests {
 
     @Order(15)
     @Test
-    void joinGame_Failure() throws ResponseException {
+    void joinGameFailure() throws ResponseException {
         facade.logoutUser();
         assertThrows(ResponseException.class, () -> facade.joinGame("WHITE", 999));
     }
