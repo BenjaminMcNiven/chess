@@ -1,8 +1,27 @@
 package ui;
 
+import exception.ResponseException;
+import model.GameData;
+import server.ServerFacade;
+
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class PostloginClient implements Client{
+
+    private State state;
+    private final ServerFacade server;
+
+    public PostloginClient(ServerFacade server) {
+        this.server = server;
+        state=State.SIGNEDIN;
+    }
+
+    @Override
+    public State getState() {
+        return state;
+    }
+
     @Override
     public String help() {
         return """
@@ -27,7 +46,6 @@ public class PostloginClient implements Client{
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "logout" -> logout();
-                case "quit" -> quit();
                 default -> help();
             };
         } catch (Exception e) {
@@ -35,27 +53,51 @@ public class PostloginClient implements Client{
         }
     }
 
-    public String create(String[] input){
-        return "";
+    public String create(String[] input) throws ResponseException {
+        if(input.length==1) {
+            server.createGame(input[0]);
+            return "Successfully create a new game named "+input[0];
+        }
+        throw new ResponseException(400,"Expected: create <NAME>");
     }
 
-    public String list(){
-        return "";
+    public String list() throws ResponseException {
+        if(state==State.SIGNEDIN){
+            StringBuilder gamesList= new StringBuilder("Games:");
+            HashMap<Integer, GameData> gamesMap= server.listGames();
+            gamesMap.forEach((key,value)->
+                gamesList.append("\n   ").append(key).append(": ").append(value.gameName())
+            );
+            return gamesList.toString();
+        }
+        throw new ResponseException(400,"Unauthorized");
     }
 
-    public String join(String[] input){
-        return "";
+    public String join(String[] input) throws ResponseException {
+        if(state==State.SIGNEDIN) {
+            server.joinGame(input[0], Integer.parseInt(input[1]));
+            state=State.INGAME;
+            return "Successfully joined game " + input[0];
+        }
+        throw new ResponseException(400,"Unauthorized");
     }
 
-    public String observe(String[] input){
-        return "";
+    public String observe(String[] input) throws ResponseException {
+        if(state==State.SIGNEDIN) {
+//        Insert logic to switch to gameplay client/drawBoard interface
+            state=State.OBSERVE;
+            return input[0];
+        }
+        throw new ResponseException(400,"Unauthorized");
     }
 
-    public String logout(){
-        return "";
+    public String logout() throws ResponseException {
+        if(state==State.SIGNEDIN) {
+            server.logoutUser();
+            state=State.SIGNEDOUT;
+            return "Logged out";
+        }
+        throw new ResponseException(400,"Unauthorized");
     }
 
-    public String quit(){
-        return "";
-    }
 }

@@ -1,16 +1,19 @@
 package ui;
 
 import java.util.Arrays;
+
+import exception.ResponseException;
+import model.UserData;
 import server.ServerFacade;
 
 public class PreloginClient implements Client {
 
+    private State state;
     private final ServerFacade server;
-    private final String serverURL;
 
-    public PreloginClient(String serverURL) {
-        server = new ServerFacade(serverURL);
-        this.serverURL = serverURL;
+    public PreloginClient(ServerFacade server) {
+        this.server = server;
+        state=State.SIGNEDOUT;
     }
 
     @Override
@@ -31,25 +34,35 @@ public class PreloginClient implements Client {
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
-                case "quit" -> quit();
-                default -> help();
+                default -> "";
             };
         } catch (Exception e) {
             return e.getMessage();
         }
     }
 
-    public String register(String[] inputs){
-        return "";
+    public String register(String[] inputs) throws ResponseException {
+        if(inputs.length==3) {
+            UserData newUser = new UserData(inputs[0], inputs[1], inputs[2]);
+            var resp = server.register(newUser);
+            state=State.SIGNEDIN;
+            return "You successfully registered "+resp.username();
+        }
+        throw new ResponseException(400, "Expected register <USERNAME> <PASSWORD> <EMAIL>");
     }
 
-    public String login(String[] inputs){
-
-        return "";
+    public String login(String[] inputs) throws ResponseException {
+        if(inputs.length==2) {
+            UserData newUser = new UserData(inputs[0], inputs[1],null);
+            var resp = server.loginUser(newUser);
+            state=State.SIGNEDIN;
+            return "You successfully logged in as "+resp.username();
+        }
+        throw new ResponseException(400, "Expected login <USERNAME> <PASSWORD>");
     }
 
-    public String quit(){
-        return "";
+    public State getState(){
+        return state;
     }
 
 }
