@@ -1,20 +1,21 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import exception.ResponseException;
 import server.ServerFacade;
-
-import java.util.Arrays;
+import static ui.EscapeSequences.*;
 
 public class GameplayClient implements Client{
 
     private State state;
     private final ServerFacade server;
-    private final int gameID;
 
-    public GameplayClient(ServerFacade server, int GameID) {
+    public GameplayClient(ServerFacade server, State state) {
         this.server = server;
-        state=State.INGAME;
-        gameID=GameID;
+        this.state=state;
     }
 
     @Override
@@ -31,7 +32,6 @@ public class GameplayClient implements Client{
         try {
             var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
-            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "redraw" -> redraw();
                 case "logout" -> logout();
@@ -47,17 +47,68 @@ public class GameplayClient implements Client{
         return state;
     }
 
-    public String redraw() throws ResponseException {
+    public String redraw() {
+        String header=drawHeaders();
+        String board=drawBoard();
+        return header+board+header;
+    }
 
+    private String drawBoard() {
+        StringBuilder result=new StringBuilder();
+            ChessBoard board = server.getActiveGame().game().getBoard();
+            int reversed=state.equals(State.WHITE) || state.equals(State.OBSERVE)? 1: -1;
+            for(int row=8; row>0; row--){
+                for(int col=0; col<9; col++) {
+                    if ((col + row) % 2 == 0) {
+                        result.append(SET_BG_COLOR_LIGHT_GREY);
+                    }
+                    ChessPiece piece = board.getPiece(new ChessPosition(row * reversed, col * reversed));
+                    if (piece != null) {
+                        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+                            result.append(SET_TEXT_COLOR_BLACK);
+                        } else {
+                            result.append(SET_TEXT_COLOR_WHITE);
+                        }
+                        switch (piece.getPieceType()) {
+                            case PAWN:
+                                result.append(" P ");
+                                break;
+                            case KING:
+                                result.append(" K ");
+                                break;
+                            case KNIGHT:
+                                result.append(" N ");
+                                break;
+                            case BISHOP:
+                                result.append(" B ");
+                                break;
+                            case QUEEN:
+                                result.append(" Q ");
+                                break;
+                            case ROOK:
+                                result.append(" R ");
+                                break;
+                            default:
+                                throw new IllegalStateException("Unexpected value: " + piece);
+                        }
+                    }
+                    result.append(RESET_BG_COLOR+RESET_TEXT_COLOR);
+                }
+        }
+        return result.toString();
+    }
+
+    private String drawHeaders(){
+        if(state.equals(State.WHITE) || state.equals(State.OBSERVE)){
+            return SET_BG_COLOR_DARK_GREEN+"    a  b  c  d  e  f  g  h    "+RESET_BG_COLOR+"\n";
+        }
+        return SET_BG_COLOR_DARK_GREEN+"    h  g  f  e  d  c  b  a    "+RESET_BG_COLOR+"\n";
     }
 
     public String logout() throws ResponseException {
-        if(state==State.INGAME) {
-            server.logoutUser();
-            state=State.SIGNEDOUT;
-            return "Logged out. Type help for more assistance";
-        }
-        throw new ResponseException(400,"Unauthorized");
+        server.logoutUser();
+        state=State.SIGNEDOUT;
+        return "Logged out. Type help for more assistance";
     }
 
 }

@@ -79,10 +79,17 @@ public class PostloginClient implements Client{
         if(input.length!=2 || !input[1].equals("WHITE") && !input[1].equals("BLACK")){
             throw new ResponseException(400,"Expected: join <ID> WHITE|BLACK");
         }
+        if(!server.getGameMap().containsKey(Integer.parseInt(input[0]))){
+            throw new ResponseException(400, "Game ID does not exist");
+        }
         if(state==State.SIGNEDIN) {
-            server.joinGame(input[1], Integer.parseInt(input[0]));
-            state=State.INGAME;
-            return "Successfully joined game " + input[0];
+            try {
+                server.joinGame(input[1], Integer.parseInt(input[0]));
+                state=input[1].equals("WHITE")? State.WHITE: State.BLACK;
+                return "Successfully joined game " + input[0];
+            } catch (ResponseException e) {
+                throw new RuntimeException("Failed to claim that color. Color already taken");
+            }
         }
         throw new ResponseException(400,"Unauthorized");
     }
@@ -94,7 +101,8 @@ public class PostloginClient implements Client{
         if(state==State.SIGNEDIN) {
 //        Insert logic to switch to gameplay client/drawBoard interface
             state=State.OBSERVE;
-            return input[0];
+            server.observe(Integer.parseInt(input[0]));
+            return "Viewing Game "+server.getGameMap().get(Integer.parseInt(input[0])).gameName();
         }
         throw new ResponseException(400,"Unauthorized");
     }

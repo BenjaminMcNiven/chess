@@ -33,8 +33,8 @@ public class REPL{
                 else if(client.getState()==State.SIGNEDOUT && client.getClass()!=PreloginClient.class){
                     client=new PreloginClient(server);
                 }
-                else if(client.getState()==State.WHITE ||client.getState()==State.BLACK && client.getClass()!=GameplayClient.class){
-                    client=new GameplayClient(server);
+                else if(client.getState()==State.OBSERVE ||client.getState()==State.WHITE ||client.getState()==State.BLACK && client.getClass()!=GameplayClient.class){
+                    client=new GameplayClient(server,client.getState());
                     System.out.println(((GameplayClient)client).redraw());
                 }
             } catch (Throwable e) {

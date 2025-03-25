@@ -20,6 +20,7 @@ public class ServerFacade {
     private final String serverUrl;
     private String authToken;
     private HashMap<Integer,GameData> gameMap;
+    private Integer activeGame;
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -56,6 +57,7 @@ public class ServerFacade {
             Type responseType = new TypeToken<Map<String, Collection<GameData>>>() {}.getType();
             Map<String, Collection<GameData>> response = this.makeRequest("GET", path, null, responseType);
             createGameMap((ArrayList<GameData>)response.get("games"));
+            activeGame=null;
             return gameMap;
         }
         throw new ResponseException(400, "Unauthorized");
@@ -73,8 +75,19 @@ public class ServerFacade {
         }
     }
 
-    public GameData getGameFromMap(int gameID){
-        return gameMap.get(gameID);
+    public HashMap<Integer,GameData> getGameMap(){
+        return gameMap;
+    }
+
+    public void observe(int gameID){
+        activeGame=gameID;
+    }
+
+    public GameData getActiveGame(){
+        if(activeGame!=null){
+            return gameMap.get(activeGame);
+        }
+        return null;
     }
 
     public void createGame(String gameName) throws ResponseException {
@@ -96,6 +109,7 @@ public class ServerFacade {
             JoinGameRequest newJoin = new JoinGameRequest(color, gameMap.get(gameID).gameID());
             var path = "/game";
             this.makeRequest("PUT", path, newJoin, null);
+            activeGame=gameID;
         }
         else{
             throw new ResponseException(400,"Unauthorized");
