@@ -1,10 +1,10 @@
 package ui;
 
-import java.util.Arrays;
-
 import exception.ResponseException;
 import model.UserData;
 import server.ServerFacade;
+
+import java.util.Arrays;
 
 public class PreloginClient implements Client {
 

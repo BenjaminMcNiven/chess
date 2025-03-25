@@ -7,9 +7,14 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

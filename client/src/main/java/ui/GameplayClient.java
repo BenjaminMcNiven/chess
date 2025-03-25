@@ -6,6 +6,7 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import exception.ResponseException;
 import server.ServerFacade;
+
 import static ui.EscapeSequences.*;
 
 public class GameplayClient implements Client{
