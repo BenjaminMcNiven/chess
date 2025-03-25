@@ -78,7 +78,7 @@ public class PostloginClient implements Client{
 
     public String join(String[] input) throws ResponseException {
 
-        if(input.length!=2 || !input[1].equals("WHITE") && !input[1].equals("BLACK")){
+        if(input.length!=2 || isNotInteger(input[0]) || !input[1].equals("WHITE") && !input[1].equals("BLACK")){
             throw new ResponseException(400,"Expected: join <ID> WHITE|BLACK");
         }
         else if(!server.getGameMap().containsKey(Integer.parseInt(input[0]))){
@@ -97,7 +97,7 @@ public class PostloginClient implements Client{
     }
 
     public String observe(String[] input) throws ResponseException {
-        if(input.length!=1){
+        if(input.length!=1 || isNotInteger(input[0])){
             throw new ResponseException(400,"Expected: observe <ID>");
         }
         if(state==State.SIGNEDIN) {
@@ -116,6 +116,15 @@ public class PostloginClient implements Client{
             return "Logged out. Type help for more assistance";
         }
         throw new ResponseException(400,"Unauthorized");
+    }
+
+    private boolean isNotInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return false;
+        } catch (NumberFormatException e) {
+            return true;
+        }
     }
 
 }
