@@ -34,7 +34,7 @@ public class PreloginClient implements Client {
             return switch (cmd) {
                 case "register" -> register(params);
                 case "login" -> login(params);
-                case "quit" -> "quit";
+                case "quit" -> "Quitting";
                 default -> help();
             };
         } catch (Exception e) {

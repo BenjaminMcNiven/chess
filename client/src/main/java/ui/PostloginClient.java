@@ -46,7 +46,7 @@ public class PostloginClient implements Client{
                 case "join" -> join(params);
                 case "observe" -> observe(params);
                 case "logout" -> logout();
-                case "quit" -> "quit";
+                case "quit" -> "Quitting";
                 default -> help();
             };
         } catch (Exception e) {
@@ -78,7 +78,7 @@ public class PostloginClient implements Client{
 
     public String join(String[] input) throws ResponseException {
 
-        if(input.length!=2 || isNotInteger(input[0]) || !input[1].equals("WHITE") && !input[1].equals("BLACK")){
+        if(input.length!=2 || isNotInteger(input[0]) || !input[1].equalsIgnoreCase("WHITE") && !input[1].equalsIgnoreCase("BLACK")){
             throw new ResponseException(400,"Expected: join <ID> WHITE|BLACK");
         }
         else if(!server.getGameMap().containsKey(Integer.parseInt(input[0]))){
@@ -86,8 +86,8 @@ public class PostloginClient implements Client{
         }
         else if(state==State.SIGNEDIN) {
             try {
-                server.joinGame(input[1], Integer.parseInt(input[0]));
-                state=input[1].equals("WHITE")? State.WHITE: State.BLACK;
+                server.joinGame(input[1].toUpperCase(), Integer.parseInt(input[0]));
+                state=input[1].equalsIgnoreCase("WHITE")? State.WHITE: State.BLACK;
                 return "Successfully joined game " + input[0];
             } catch (ResponseException e) {
                 throw new RuntimeException("Failed to claim that color. Color already taken");
