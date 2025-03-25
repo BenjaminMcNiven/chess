@@ -37,6 +37,7 @@ public class GameplayClient implements Client{
                 case "redraw" -> redraw();
                 case "exit" -> exit();
                 case "logout" -> logout();
+                case "quit" -> "quit";
                 default -> help();
             };
         } catch (Exception e) {

@@ -21,20 +21,17 @@ public class ServerFacade {
     private String authToken;
     private HashMap<Integer,GameData> gameMap;
     private Integer activeGame;
+    private String username;
 
     public ServerFacade(String url) {
         serverUrl = url;
     }
 
-//    public void clearDatabase() throws ResponseException {
-//        var path = "/db";
-//        this.makeRequest("DELETE", path, null, null);
-//    }
-
     public AuthData register(UserData newUser) throws ResponseException {
         var path = "/user";
         AuthData newAuth=this.makeRequest("POST", path, newUser, AuthData.class);
         authToken=newAuth.authToken();
+        username= newAuth.username();
         return newAuth;
     }
 
@@ -42,6 +39,7 @@ public class ServerFacade {
         var path = "/session";
         AuthData newAuth=this.makeRequest("POST", path, loginUser, AuthData.class);
         authToken=newAuth.authToken();
+        username= newAuth.username();
         return newAuth;
     }
 
@@ -49,6 +47,9 @@ public class ServerFacade {
         var path = "/session";
         this.makeRequest("DELETE", path, null, null);
         authToken=null;
+        username=null;
+        activeGame=null;
+        gameMap=null;
     }
 
     public HashMap<Integer, GameData> listGames() throws ResponseException {
@@ -79,7 +80,10 @@ public class ServerFacade {
         return gameMap;
     }
 
-    public void observe(int gameID){
+    public void observe(int gameID) throws ResponseException {
+        if(gameMap==null){
+            throw new ResponseException(500, "Games not yet listed! List the games to find a game to join");
+        }
         activeGame=gameID;
     }
 
@@ -106,10 +110,15 @@ public class ServerFacade {
             if(gameMap==null){
                 throw new ResponseException(500, "Games not yet listed! List the games to find a game to join");
             }
-            JoinGameRequest newJoin = new JoinGameRequest(color, gameMap.get(gameID).gameID());
-            var path = "/game";
-            this.makeRequest("PUT", path, newJoin, null);
-            activeGame=gameID;
+            if(color.equals("BLACK")? username.equals(gameMap.get(gameID).blackUsername()): username.equals(gameMap.get(gameID).whiteUsername())){
+                activeGame=gameID;
+            }
+            else{
+                JoinGameRequest newJoin = new JoinGameRequest(color, gameMap.get(gameID).gameID());
+                var path = "/game";
+                this.makeRequest("PUT", path, newJoin, null);
+                activeGame=gameID;
+            }
         }
         else{
             throw new ResponseException(400,"Unauthorized");
