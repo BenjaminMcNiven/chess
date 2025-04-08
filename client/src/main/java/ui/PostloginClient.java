@@ -2,7 +2,7 @@ package ui;
 
 import exception.ResponseException;
 import model.GameData;
-import facade.ServerFacade;
+import facade.HttpCommmunicator;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,9 +10,9 @@ import java.util.HashMap;
 public class PostloginClient implements Client{
 
     private State state;
-    private final ServerFacade server;
+    private final HttpCommmunicator server;
 
-    public PostloginClient(ServerFacade server) {
+    public PostloginClient(HttpCommmunicator server) {
         this.server = server;
         state=State.SIGNEDIN;
     }

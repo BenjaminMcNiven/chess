@@ -2,16 +2,16 @@ package ui;
 
 import exception.ResponseException;
 import model.UserData;
-import facade.ServerFacade;
+import facade.HttpCommmunicator;
 
 import java.util.Arrays;
 
 public class PreloginClient implements Client {
 
     private State state;
-    private final ServerFacade server;
+    private final HttpCommmunicator server;
 
-    public PreloginClient(ServerFacade server) {
+    public PreloginClient(HttpCommmunicator server) {
         this.server = server;
         state=State.SIGNEDOUT;
     }

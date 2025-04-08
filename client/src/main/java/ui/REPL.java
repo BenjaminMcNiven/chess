@@ -1,6 +1,6 @@
 package ui;
 
-import facade.ServerFacade;
+import facade.HttpCommmunicator;
 
 import java.util.Scanner;
 
@@ -9,13 +9,13 @@ import static ui.EscapeSequences.*;
 public class REPL{
 
     private Client client;
-    private final ServerFacade server;
+    private final HttpCommmunicator server;
     private final State obs=State.OBSERVE;
     private final State bl=State.BLACK;
     private final State w=State.WHITE;
 
     public REPL(String serverUrl) {
-        server=new ServerFacade(serverUrl);
+        server=new HttpCommmunicator(serverUrl);
         client = new PreloginClient(server);
     }
 

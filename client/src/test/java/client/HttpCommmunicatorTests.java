@@ -6,7 +6,7 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
-import facade.ServerFacade;
+import facade.HttpCommmunicator;
 
 import java.util.HashMap;
 
@@ -14,17 +14,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ServerFacadeTests {
+public class HttpCommmunicatorTests {
 
     private static Server server;
-    static ServerFacade facade;
+    static HttpCommmunicator facade;
 
     @BeforeAll
     public static void init() throws ResponseException {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade("http://localhost:"+port);
+        facade = new HttpCommmunicator("http://localhost:"+port);
         facade.clearDatabase();
     }
 

@@ -5,16 +5,16 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import exception.ResponseException;
-import facade.ServerFacade;
+import facade.HttpCommmunicator;
 
 import static ui.EscapeSequences.*;
 
 public class GameplayClient implements Client{
 
     private State state;
-    private final ServerFacade server;
+    private final HttpCommmunicator server;
 
-    public GameplayClient(ServerFacade server, State state) {
+    public GameplayClient(HttpCommmunicator server, State state) {
         this.server = server;
         this.state=state;
     }

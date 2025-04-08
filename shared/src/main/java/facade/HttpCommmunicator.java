@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServerFacade {
+public class HttpCommmunicator {
 
     private final String serverUrl;
     private String authToken;
@@ -28,7 +28,7 @@ public class ServerFacade {
     private Integer activeGame;
     private String username;
 
-    public ServerFacade(String url) {
+    public HttpCommmunicator(String url) {
         serverUrl = url;
     }
 
