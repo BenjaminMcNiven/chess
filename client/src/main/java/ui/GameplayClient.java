@@ -37,6 +37,7 @@ public class GameplayClient implements Client{
             return switch (cmd) {
                 case "redraw" -> redraw();
                 case "exit" -> exit();
+                case "highlight" -> redraw();
                 case "logout" -> logout();
                 case "quit" -> "Quitting";
                 default -> help();
