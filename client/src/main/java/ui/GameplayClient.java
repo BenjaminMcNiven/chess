@@ -7,6 +7,7 @@ import websocket.WebSocketCommunicator;
 import websocket.messages.*;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -28,8 +29,10 @@ public class GameplayClient implements Client, ServerMessageObserver {
     public String help() {
         return """
                 redraw - Redraw the board
-                exit = to leave the game
-                logout - to return to login
+                highlight <ROW> <COL> = to highlight the valid moves from a piece
+                leave - to exit the game
+                move <ROW1> <COL1> <ROW2> <COL2> - to make a move
+                resign - to resign the game
                 help - to see possible commands
                 quit - to exit""";
     }
@@ -66,13 +69,15 @@ public class GameplayClient implements Client, ServerMessageObserver {
         return state;
     }
 
-    public String draw(ChessBoard board, ChessPosition highlightPos) throws ResponseException {
+    public String draw(ChessGame game, ChessPosition highlightPos) throws ResponseException {
         String header=drawHeaders();
-        String drawnBoard=drawBoard(board);
+        String drawnBoard=drawBoard(game, highlightPos);
         return header+drawnBoard+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
     // TODO: Add highlight feature
-    private String drawBoard(ChessBoard board){
+    private String drawBoard(ChessGame game, ChessPosition highlightPos){
+        Collection<ChessMove> highlightMoves =game.validMoves(highlightPos);
+        ChessBoard board=game.getBoard();
         StringBuilder result = new StringBuilder();
         int reversed = state.equals(State.WHITE) || state.equals(State.OBSERVE) ? 1 : -1;
         for (int row = reversed == 1 ? 8 : 1; row > 0 && row < 9; row = row - reversed) {
@@ -82,6 +87,10 @@ public class GameplayClient implements Client, ServerMessageObserver {
                     result.append(SET_BG_COLOR_DARK_GREY);
                 } else {
                     result.append(SET_BG_COLOR_LIGHT_GREY);
+                }
+                ChessMove newMove=new ChessMove(highlightPos,new ChessPosition(row,col));
+                if(highlightMoves.contains(newMove)){
+                    result.append(SET_BG_COLOR_WHITE);
                 }
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
                 if (piece == null) {
@@ -161,13 +170,13 @@ public class GameplayClient implements Client, ServerMessageObserver {
     public void notify(ServerMessage message) {
         if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
             try {
-                System.out.println(draw(((LoadGameMessage)message).getGame().getBoard(), null));
+                System.out.println(draw(((LoadGameMessage)message).getGame(), null));
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.HIGHLIGHT){
             try {
-                System.out.println(draw(((HighlightGameMessage)message).getGame().getBoard(), ((HighlightGameMessage)message).getPos()));
+                System.out.println(draw(((HighlightGameMessage)message).getGame(), ((HighlightGameMessage)message).getPos()));
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }

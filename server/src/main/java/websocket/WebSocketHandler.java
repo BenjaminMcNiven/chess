@@ -118,6 +118,24 @@ public class WebSocketHandler {
         connections.broadcast(visitorName,lgm);
         var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" made the move "+move);
         connections.broadcast(visitorName, message);
+        switch(game.getState()){
+            case STALE ->{
+                var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! Stalemate");
+                connections.broadcast(visitorName, res);
+                session.getRemote().sendString(new Gson().toJson(res));
+            }
+            case WHITE ->{
+                var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! White wins!");
+                connections.broadcast(visitorName, res);
+                session.getRemote().sendString(new Gson().toJson(res));
+            }
+            case BLACK ->{
+                var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! Black wins!");
+                connections.broadcast(visitorName, res);
+                session.getRemote().sendString(new Gson().toJson(res));
+            }
+        }
+
     }
 
     private void resign(String authToken, int gameID, Session session) throws IOException{

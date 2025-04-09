@@ -29,20 +29,22 @@ public class WebSocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             //set message handler
-            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
-                    serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
-                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
-                    serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
-                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
-                    serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
-                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.HIGHLIGHT){
-                    serverMessageObserver.notify(new Gson().fromJson(message, HighlightGameMessage.class));
-                }else{
-                    serverMessageObserver.notify(serverMessage);
+            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+                @Override
+                public void onMessage(String message) {
+                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                    if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+                        serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
+                    } else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+                        serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
+                    } else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+                        serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
+                    } else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.HIGHLIGHT) {
+                        serverMessageObserver.notify(new Gson().fromJson(message, HighlightGameMessage.class));
+                    } else {
+                        serverMessageObserver.notify(serverMessage);
+                    }
                 }
-
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new ResponseException(500, ex.getMessage());
