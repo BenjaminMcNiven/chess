@@ -6,6 +6,7 @@ import model.GameData;
 import model.UserData;
 import spark.*;
 import service.*;
+import server.websocket.WebSocketHandler;
 
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +21,8 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+        // Register Websocket handler here
+        Spark.webSocket("/ws", WebSocketHandler.class);
         // Register your endpoints and handle exceptions here.
         createRoutes();
         //This line initializes the server and can be removed once you have a functioning endpoint

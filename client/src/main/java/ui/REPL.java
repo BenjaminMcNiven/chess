@@ -1,12 +1,14 @@
 package ui;
 
 import facade.HttpCommmunicator;
+import messages.ServerMessage;
+import websocket.ServerMessageObserver;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class REPL{
+public class REPL implements ServerMessageObserver {
 
     private Client client;
     private final HttpCommmunicator server;
@@ -51,4 +53,8 @@ public class REPL{
         System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
+    @Override
+    public void notify(ServerMessage message) {
+        //Logic for notify here
+    }
 }

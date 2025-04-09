@@ -54,13 +54,12 @@ public class GameplayClient implements Client{
 
     public String redraw() throws ResponseException {
         String header=drawHeaders();
-        String board=drawBoard();
+        String board=drawBoard(server.getActiveGame().game().getBoard());
         return header+board+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
 
-    private String drawBoard() throws ResponseException {
+    private String drawBoard(ChessBoard board) throws ResponseException {
         StringBuilder result = new StringBuilder();
-        ChessBoard board = server.getActiveGame().game().getBoard();
         int reversed = state.equals(State.WHITE) || state.equals(State.OBSERVE) ? 1 : -1;
         for (int row = reversed == 1 ? 8 : 1; row > 0 && row < 9; row = row - reversed) {
             result.append(SET_BG_COLOR_DARK_GREEN + " ").append(row).append(" ");

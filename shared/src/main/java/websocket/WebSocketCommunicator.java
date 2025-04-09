@@ -11,7 +11,7 @@ import java.net.URISyntaxException;
 public class WebSocketCommunicator extends Endpoint {
 
     Session session;
-    NotificationHandler notificationHandler;
+    ServerMessageObserver notificationHandler;
 
 
     public WebSocketCommunicator(String url, NotificationHandler notificationHandler) throws ResponseException {
