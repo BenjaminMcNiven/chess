@@ -1,14 +1,10 @@
 package websocket;
 
-import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
-import websocket.messages.ErrorMessage;
-import websocket.messages.LoadGameMessage;
-import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 import websocket.commands.*;
 
 import javax.websocket.*;
@@ -33,21 +29,20 @@ public class WebSocketCommunicator extends Endpoint {
             this.session = container.connectToServer(this, socketURI);
 
             //set message handler
-            this.session.addMessageHandler(new MessageHandler.Whole<String>() {
-                @Override
-                public void onMessage(String message) {
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
-                        serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
-                    }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
-                        serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
-                    }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
-                        serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
-                    }else{
-                        serverMessageObserver.notify(serverMessage);
-                    }
-
+            this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+                ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
+                    serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
+                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+                    serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
+                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
+                    serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
+                }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.HIGHLIGHT){
+                    serverMessageObserver.notify(new Gson().fromJson(message, HighlightGameMessage.class));
+                }else{
+                    serverMessageObserver.notify(serverMessage);
                 }
+
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -62,7 +57,7 @@ public class WebSocketCommunicator extends Endpoint {
     public void connect(String authToken,int gameID) throws ResponseException {
         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken,gameID);
         try {
-            this.session.getBasicRemote().sendText((String)new Gson().toJson(command));
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
@@ -77,9 +72,9 @@ public class WebSocketCommunicator extends Endpoint {
         }
     }
 
-    public void leave(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
+    public void leave(String authToken, int gameID) throws ResponseException {
         try {
-            var command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, color);
+            var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -95,9 +90,9 @@ public class WebSocketCommunicator extends Endpoint {
         }
     }
 
-    public void resign(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
+    public void resign(String authToken, int gameID) throws ResponseException {
         try {
-            var command = new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID,color);
+            var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

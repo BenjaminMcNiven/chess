@@ -2,21 +2,23 @@ package ui;
 
 import chess.*;
 import exception.ResponseException;
+import websocket.ServerMessageObserver;
 import websocket.WebSocketCommunicator;
+import websocket.messages.*;
 
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
 
-public class GameplayClient implements Client {
+public class GameplayClient implements Client, ServerMessageObserver {
 
     private State state;
     private final WebSocketCommunicator ws;
     private final String authToken;
     private final int gameID;
 
-    public GameplayClient(String url, State state, String authToken, int gameID, REPL repl) throws ResponseException {
-        ws=new WebSocketCommunicator(url,repl);
+    public GameplayClient(String url, State state, String authToken, int gameID) throws ResponseException {
+        ws=new WebSocketCommunicator(url,this);
         this.state=state;
         this.authToken = authToken;
         this.gameID = gameID;
@@ -64,13 +66,13 @@ public class GameplayClient implements Client {
         return state;
     }
 
-    public String draw(ChessBoard board) throws ResponseException {
+    public String draw(ChessBoard board, ChessPosition highlightPos) throws ResponseException {
         String header=drawHeaders();
         String drawnBoard=drawBoard(board);
         return header+drawnBoard+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
     // TODO: Add highlight feature
-    private String drawBoard(ChessBoard board) throws ResponseException {
+    private String drawBoard(ChessBoard board){
         StringBuilder result = new StringBuilder();
         int reversed = state.equals(State.WHITE) || state.equals(State.OBSERVE) ? 1 : -1;
         for (int row = reversed == 1 ? 8 : 1; row > 0 && row < 9; row = row - reversed) {
@@ -128,22 +130,19 @@ public class GameplayClient implements Client {
     }
 
     public void connect() throws ResponseException {
-        ws.connect(authToken, gameID);;
+        ws.connect(authToken, gameID);
     }
 
     public void leave() throws ResponseException {
-        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
-        ws.leave(authToken,gameID,color);
+        ws.leave(authToken,gameID);
         state = State.SIGNEDIN;
     }
 
     public void resign() throws ResponseException {
-        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
-        ws.resign(authToken,gameID,color);
+        ws.resign(authToken,gameID);
     }
 
     public void redraw() throws ResponseException {
-        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
         ws.redraw(authToken,gameID);
     }
 
@@ -159,14 +158,23 @@ public class GameplayClient implements Client {
     }
 
 
-//    public void notify(ServerMessage message) {
-//        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
-//            ChessBoard board=((LoadGameMessage)message).getGame().getBoard();
-//            try {
-//                System.out.println(draw(board));
-//            } catch (ResponseException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//    }
+    public void notify(ServerMessage message) {
+        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+            try {
+                System.out.println(draw(((LoadGameMessage)message).getGame().getBoard(), null));
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.HIGHLIGHT){
+            try {
+                System.out.println(draw(((HighlightGameMessage)message).getGame().getBoard(), ((HighlightGameMessage)message).getPos()));
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
+            System.out.println(RESET_TEXT_COLOR+((NotificationMessage)message).getMessage());
+        } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
+            System.out.println(RESET_TEXT_COLOR+SET_BG_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);
+        }
+    }
 }
