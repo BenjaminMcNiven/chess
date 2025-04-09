@@ -43,25 +43,19 @@ public class GameplayClient implements Client, ServerMessageObserver {
             var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            switch (cmd) {
+            return switch (cmd) {
                 case "connect"->connect();
                 case "redraw" ->redraw();
                 case "highlight" -> highlight(params);
                 case "move" -> makeMove(params);
                 case "resign" ->resign();
                 case "leave" -> leave();
-                case "quit" -> {
-                    leave();
-                    return "Quitting";
-                }
-                default -> {
-                    return help();
-                }
-            }
+                case "quit" -> leave()+"Quitting";
+                default -> help();
+            };
         } catch (Exception e) {
             return e.getMessage();
         }
-        return null;
     }
 
     @Override
@@ -72,9 +66,9 @@ public class GameplayClient implements Client, ServerMessageObserver {
     public String draw(ChessGame game, ChessPosition highlightPos) throws ResponseException {
         String header=drawHeaders();
         String drawnBoard=drawBoard(game, highlightPos);
-        return header+drawnBoard+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
+        return header+drawnBoard+(header).replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
-    // TODO: Add highlight feature
+
     private String drawBoard(ChessGame game, ChessPosition highlightPos){
         Collection<ChessMove> highlightMoves =game.validMoves(highlightPos);
         ChessBoard board=game.getBoard();
@@ -89,7 +83,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
                     result.append(SET_BG_COLOR_LIGHT_GREY);
                 }
                 ChessMove newMove=new ChessMove(highlightPos,new ChessPosition(row,col));
-                if(highlightMoves.contains(newMove)){
+                if(highlightMoves!=null && highlightMoves.contains(newMove)){
                     result.append(SET_BG_COLOR_WHITE);
                 }
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
@@ -133,37 +127,43 @@ public class GameplayClient implements Client, ServerMessageObserver {
 
     private String drawHeaders() {
         if (state.equals(State.WHITE) || state.equals(State.OBSERVE)) {
-            return SET_TEXT_BOLD+SET_BG_COLOR_DARK_GREEN + "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
+            return "\n"+SET_TEXT_BOLD+SET_BG_COLOR_DARK_GREEN+RESET_TEXT_COLOR+ "    a  b  c  d  e  f  g  h    " + RESET_BG_COLOR + "\n";
         }
-        return SET_TEXT_BOLD+SET_BG_COLOR_DARK_GREEN + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR + "\n";
+        return "\n"+SET_TEXT_BOLD+SET_BG_COLOR_DARK_GREEN+RESET_TEXT_COLOR + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR + "\n";
     }
 
-    public void connect() throws ResponseException {
+    public String connect() throws ResponseException {
         ws.connect(authToken, gameID);
+        return "";
     }
 
-    public void leave() throws ResponseException {
+    public String leave() throws ResponseException {
         ws.leave(authToken,gameID);
         state = State.SIGNEDIN;
+        return "";
     }
 
-    public void resign() throws ResponseException {
+    public String resign() throws ResponseException {
         ws.resign(authToken,gameID);
+        return "";
     }
 
-    public void redraw() throws ResponseException {
+    public String redraw() throws ResponseException {
         ws.redraw(authToken,gameID);
+        return "";
     }
 
-    public void highlight(String[] params) throws ResponseException {
+    public String highlight(String[] params) throws ResponseException {
         ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
         ws.highlight(authToken,gameID,pos);
+        return "";
     }
 
-    public void makeMove(String[] params) throws ResponseException {
+    public String makeMove(String[] params) throws ResponseException {
         ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
         ChessPosition pos2 = new ChessPosition(Integer.parseInt(params[2]),Integer.parseInt(params[3]));
         ws.makeMove(authToken,gameID, new ChessMove(pos,pos2));
+        return "";
     }
 
 
@@ -185,5 +185,6 @@ public class GameplayClient implements Client, ServerMessageObserver {
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
             System.out.println(RESET_TEXT_COLOR+SET_BG_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);
         }
+        System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }
