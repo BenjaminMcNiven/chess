@@ -1,12 +1,16 @@
 package ui;
 
+import chess.ChessBoard;
 import facade.HttpCommmunicator;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessage;
+import websocket.ServerMessageObserver;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class REPL {
+public class REPL implements ServerMessageObserver {
 
     private Client client;
     private final HttpCommmunicator server;
@@ -39,7 +43,7 @@ public class REPL {
                     client=new PreloginClient(server);
                 }
                 else if((client.getState()==obs ||client.getState()==w ||client.getState()==bl) && client.getClass()!=GameplayClient.class){
-                    client=new GameplayClient(url,client.getState(),server.getAuthToken(), server.getActiveGame().gameID());
+                    client=new GameplayClient(url,client.getState(),server.getAuthToken(), server.getActiveGame().gameID(), this);
                     ((GameplayClient)client).connect();
                 }
             } catch (Throwable e) {
@@ -51,5 +55,15 @@ public class REPL {
 
     private void printPrompt() {
         System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    public void notify(ServerMessage message) {
+        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+            ChessBoard board=((LoadGameMessage)message).getGame().getBoard();
+            System.out.println(board);
+        }
+        else {
+            System.out.println(message);
+        }
     }
 }

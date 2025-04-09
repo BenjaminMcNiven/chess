@@ -2,11 +2,14 @@ package websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
-import commands.MakeMoveCommand;
-import commands.UserGameCommand;
 import exception.ResponseException;
-import messages.ServerMessage;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
+import websocket.commands.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -34,7 +37,16 @@ public class WebSocketCommunicator extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    serverMessageObserver.notify(serverMessage);
+                    if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
+                        serverMessageObserver.notify(new Gson().fromJson(message, ErrorMessage.class));
+                    }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+                        serverMessageObserver.notify(new Gson().fromJson(message, LoadGameMessage.class));
+                    }else if(serverMessage.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
+                        serverMessageObserver.notify(new Gson().fromJson(message, NotificationMessage.class));
+                    }else{
+                        serverMessageObserver.notify(serverMessage);
+                    }
+
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -48,11 +60,11 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     public void connect(String authToken,int gameID) throws ResponseException {
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken,gameID);
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken,gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(command));
-        } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            this.session.getBasicRemote().sendText((String)new Gson().toJson(command));
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
         }
     }
 
@@ -65,9 +77,9 @@ public class WebSocketCommunicator extends Endpoint {
         }
     }
 
-    public void leave(String authToken, int gameID) throws ResponseException {
+    public void leave(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            var command = new LeaveCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID, color);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -83,9 +95,18 @@ public class WebSocketCommunicator extends Endpoint {
         }
     }
 
-    public void resign(String authToken, int gameID) throws ResponseException {
+    public void resign(String authToken, int gameID, ChessGame.TeamColor color) throws ResponseException {
         try {
-            var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            var command = new ResignCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID,color);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void highlight(String authToken, int gameID, ChessPosition position) throws ResponseException {
+        try {
+            var command = new HighlightCommand(UserGameCommand.CommandType.HIGHLIGHT, authToken, gameID, position);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

@@ -16,12 +16,15 @@ public class ChessGame implements Cloneable{
     private ChessBoard board;
     private boolean[] castlePieceMoved;
 
+    private ChessState state;
+
     public ChessGame() {
         currentTurn=TeamColor.WHITE;
         board=new ChessBoard();
         board.resetBoard();
         castlePieceMoved= new boolean[]{false, false, false, false, false, false};
         lastMove=null;
+        state=ChessState.PLAY;
     }
 
     /**
@@ -230,8 +233,19 @@ public class ChessGame implements Cloneable{
             board.addPiece(move.getStartPosition(),null);
             lastMove=move;
             if(currentTurn==TeamColor.WHITE){
+                if(isInCheckmate(TeamColor.BLACK)){
+                    state=ChessState.WHITE;
+                }
+                if(isInStalemate(TeamColor.BLACK)){
+                    state=ChessState.STALE;
+                }
                 currentTurn=TeamColor.BLACK;
-            }else {currentTurn=TeamColor.WHITE;}
+            }else {currentTurn=TeamColor.WHITE;
+                if(isInCheckmate(TeamColor.WHITE)){
+                    state=ChessState.BLACK;
+                }if(isInStalemate(TeamColor.WHITE)){
+                    state=ChessState.STALE;
+                }}
         } catch (Exception e) {
             throw new InvalidMoveException(e.getMessage());
         }
@@ -371,6 +385,14 @@ public class ChessGame implements Cloneable{
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public ChessState getState() {
+        return state;
+    }
+
+    public void setState(ChessState state) {
+        this.state=state;
     }
 
     @Override

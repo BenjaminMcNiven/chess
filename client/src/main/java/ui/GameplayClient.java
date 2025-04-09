@@ -1,27 +1,22 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
-import com.google.gson.Gson;
+import chess.*;
 import exception.ResponseException;
-import messages.LoadGameMessage;
-import messages.ServerMessage;
-import websocket.ServerMessageObserver;
 import websocket.WebSocketCommunicator;
+
+import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
 
-public class GameplayClient implements Client, ServerMessageObserver {
+public class GameplayClient implements Client {
 
     private State state;
     private final WebSocketCommunicator ws;
     private final String authToken;
     private final int gameID;
 
-    public GameplayClient(String url, State state, String authToken, int gameID) throws ResponseException {
-        ws=new WebSocketCommunicator(url,this);
+    public GameplayClient(String url, State state, String authToken, int gameID, REPL repl) throws ResponseException {
+        ws=new WebSocketCommunicator(url,repl);
         this.state=state;
         this.authToken = authToken;
         this.gameID = gameID;
@@ -42,19 +37,26 @@ public class GameplayClient implements Client, ServerMessageObserver {
         try {
             var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
-            return switch (cmd) {
-//                case "redraw" -> redraw();
-//                case "exit" -> exit();
-//                case "highlight" -> highlight();
-//                case "move" -> makeMove();
-//                case "resign" -> resign();
+            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+            switch (cmd) {
+                case "connect"->connect();
+                case "redraw" ->redraw();
+                case "highlight" -> highlight(params);
+                case "move" -> makeMove(params);
+                case "resign" ->resign();
                 case "leave" -> leave();
-                case "quit" -> "Quitting";
-                default -> help();
-            };
+                case "quit" -> {
+                    leave();
+                    return "Quitting";
+                }
+                default -> {
+                    return help();
+                }
+            }
         } catch (Exception e) {
             return e.getMessage();
         }
+        return null;
     }
 
     @Override
@@ -129,21 +131,42 @@ public class GameplayClient implements Client, ServerMessageObserver {
         ws.connect(authToken, gameID);;
     }
 
-    public String leave() throws ResponseException {
-        ws.leave(authToken,gameID);
-        state = State.SIGNEDOUT;
-        return "Logged out. Type help for more assistance";
-    }
-
-    public String exit(){
+    public void leave() throws ResponseException {
+        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
+        ws.leave(authToken,gameID,color);
         state = State.SIGNEDIN;
-        return "Exited Game. Type help for more assistance";
     }
 
-    @Override
-    public void notify(ServerMessage message) {
-        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
-            ChessBoard board=((LoadGameMessage)message).getGame().getBoard();
-        }
+    public void resign() throws ResponseException {
+        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
+        ws.resign(authToken,gameID,color);
     }
+
+    public void redraw() throws ResponseException {
+        ChessGame.TeamColor color=state==State.BLACK? ChessGame.TeamColor.BLACK: ChessGame.TeamColor.WHITE;
+        ws.redraw(authToken,gameID);
+    }
+
+    public void highlight(String[] params) throws ResponseException {
+        ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
+        ws.highlight(authToken,gameID,pos);
+    }
+
+    public void makeMove(String[] params) throws ResponseException {
+        ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
+        ChessPosition pos2 = new ChessPosition(Integer.parseInt(params[2]),Integer.parseInt(params[3]));
+        ws.makeMove(authToken,gameID, new ChessMove(pos,pos2));
+    }
+
+
+//    public void notify(ServerMessage message) {
+//        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+//            ChessBoard board=((LoadGameMessage)message).getGame().getBoard();
+//            try {
+//                System.out.println(draw(board));
+//            } catch (ResponseException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//    }
 }

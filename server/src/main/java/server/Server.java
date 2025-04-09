@@ -6,7 +6,7 @@ import model.GameData;
 import model.UserData;
 import spark.*;
 import service.*;
-import server.websocket.WebSocketHandler;
+import websocket.WebSocketHandler;
 
 import java.util.Map;
 import java.util.Objects;
@@ -16,13 +16,18 @@ public class Server {
     public UserDAO userDAO=new MySqlUserDAO();
     public AuthDAO authDAO=new MySqlAuthDAO();
     public GameDAO gameDAO=new MySqlGameDAO();
+    private final WebSocketHandler webSocketHandler;
+
+    public Server() {
+        webSocketHandler = new WebSocketHandler(authDAO,gameDAO);
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
         // Register Websocket handler here
-        Spark.webSocket("/ws", WebSocketHandler.class);
+        Spark.webSocket("/ws",webSocketHandler);
         // Register your endpoints and handle exceptions here.
         createRoutes();
         //This line initializes the server and can be removed once you have a functioning endpoint
