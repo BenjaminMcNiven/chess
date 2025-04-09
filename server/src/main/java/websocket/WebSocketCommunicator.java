@@ -103,7 +103,7 @@ public class WebSocketCommunicator extends Endpoint {
 
     public void highlight(String authToken, int gameID, ChessPosition position) throws ResponseException {
         try {
-            var command = new HighlightCommand(UserGameCommand.CommandType.HIGHLIGHT, authToken, gameID, position);
+            HighlightCommand command = new HighlightCommand(HighlightCommand.CommandType.HIGHLIGHT, authToken, gameID, position);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());

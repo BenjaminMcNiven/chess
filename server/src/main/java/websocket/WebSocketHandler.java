@@ -46,7 +46,7 @@ public class WebSocketHandler {
             case LEAVE -> leave(command.getAuthToken(), command.getGameID());
             case RESIGN -> resign(command.getAuthToken(), command.getGameID(), session);
             case REDRAW -> redraw(command.getAuthToken(), command.getGameID(), session);
-            case HIGHLIGHT -> {
+            case HIGHLIGHT-> {
                 ChessPosition pos=new Gson().fromJson(message, HighlightCommand.class).getPos();
                 highlight(command.getAuthToken(), command.getGameID(), session, pos);
             }
@@ -178,7 +178,7 @@ public class WebSocketHandler {
         if(unauthorized(authToken)){
             throw new RuntimeException("Unauthorized to join game");
         }
-        HighlightGameMessage hgm=new HighlightGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameDAO.getGame(gameID).game(),pos);
+        HighlightGameMessage hgm = new HighlightGameMessage(HighlightGameMessage.ServerMessageType.HIGHLIGHT, gameDAO.getGame(gameID).game(), pos);
         session.getRemote().sendString(new Gson().toJson(hgm));
     }
 

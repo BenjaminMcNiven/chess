@@ -100,6 +100,9 @@ public class PostloginClient implements Client{
         if(input.length!=1 || isNotInteger(input[0])){
             throw new ResponseException(400,"Expected: observe <ID>");
         }
+        else if(!server.getGameMap().containsKey(Integer.parseInt(input[0]))){
+            throw new ResponseException(400, "Game ID does not exist");
+        }
         if(state==State.SIGNEDIN) {
             server.observe(Integer.parseInt(input[0]));
             state=State.OBSERVE;

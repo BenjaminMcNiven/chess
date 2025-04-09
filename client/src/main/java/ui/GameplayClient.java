@@ -8,18 +8,21 @@ import websocket.messages.*;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import static ui.EscapeSequences.*;
 
 public class GameplayClient implements Client, ServerMessageObserver {
 
     private State state;
-    private final WebSocketCommunicator ws;
+    private WebSocketCommunicator ws;
     private final String authToken;
     private final int gameID;
+    private final String url;
 
     public GameplayClient(String url, State state, String authToken, int gameID) throws ResponseException {
         ws=new WebSocketCommunicator(url,this);
+        this.url=url;
         this.state=state;
         this.authToken = authToken;
         this.gameID = gameID;
@@ -40,7 +43,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
     @Override
     public String eval(String input) {
         try {
-            var tokens = input.split(" ");
+            var tokens = input.strip().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
@@ -66,7 +69,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
     public String draw(ChessGame game, ChessPosition highlightPos) throws ResponseException {
         String header=drawHeaders();
         String drawnBoard=drawBoard(game, highlightPos);
-        return header+drawnBoard+(header).replace("\n","")+RESET_TEXT_BOLD_FAINT;
+        return ERASE_SCREEN+header+drawnBoard+(header).replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
 
     private String drawBoard(ChessGame game, ChessPosition highlightPos){
@@ -77,14 +80,19 @@ public class GameplayClient implements Client, ServerMessageObserver {
         for (int row = reversed == 1 ? 8 : 1; row > 0 && row < 9; row = row - reversed) {
             result.append(SET_BG_COLOR_DARK_GREEN + " ").append(row).append(" ");
             for (int col = reversed == 1 ? 1 : 8; col > 0 && col < 9; col = col + reversed) {
-                if ((col + row) % 2 == 0) {
+                ChessMove newMove=new ChessMove(highlightPos,new ChessPosition(row,col));
+                if(highlightMoves!=null && highlightMoves.contains(newMove)){
+                    if(board.getPiece(new ChessPosition(row,col))!=null){
+                        result.append(SET_BG_COLOR_LIGHT_RED);
+                    }
+                    else{
+                        result.append(SET_BG_COLOR_YELLOW_LIGHT);
+                    }
+                }
+                else if ((col + row) % 2 == 0) {
                     result.append(SET_BG_COLOR_DARK_GREY);
                 } else {
                     result.append(SET_BG_COLOR_LIGHT_GREY);
-                }
-                ChessMove newMove=new ChessMove(highlightPos,new ChessPosition(row,col));
-                if(highlightMoves!=null && highlightMoves.contains(newMove)){
-                    result.append(SET_BG_COLOR_WHITE);
                 }
                 ChessPiece piece = board.getPiece(new ChessPosition(row, col));
                 if (piece == null) {
@@ -138,9 +146,11 @@ public class GameplayClient implements Client, ServerMessageObserver {
     }
 
     public String leave() throws ResponseException {
-        ws.leave(authToken,gameID);
+        if(state!=State.OBSERVE){
+            ws.leave(authToken,gameID);
+        }
         state = State.SIGNEDIN;
-        return "";
+        return "You left the game. Type help for assistance";
     }
 
     public String resign() throws ResponseException {
@@ -154,14 +164,34 @@ public class GameplayClient implements Client, ServerMessageObserver {
     }
 
     public String highlight(String[] params) throws ResponseException {
-        ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
+        ChessPosition pos=paramToPos(params[0]);
+        if(pos==null){
+            throw new ResponseException(400,"Expected: highlight <COL><ROW>");
+        }
         ws.highlight(authToken,gameID,pos);
         return "";
     }
 
+    private ChessPosition paramToPos(String param) {
+        Map<Character, Integer> letterToNumber = Map.of(
+                'a', 1, 'b', 2, 'c', 3, 'd', 4,
+                'e', 5, 'f', 6, 'g', 7, 'h', 8
+        );
+        if(!letterToNumber.containsKey(param.charAt(0))){
+            return null;
+        }
+        if(param.charAt(1) <= '1' && param.charAt(1) >= '8'){
+            return null;
+        }
+        return new ChessPosition(Integer.parseInt(String.valueOf(param.charAt(1))),letterToNumber.get(param.charAt(0)));
+    }
+
     public String makeMove(String[] params) throws ResponseException {
-        ChessPosition pos = new ChessPosition(Integer.parseInt(params[0]),Integer.parseInt(params[1]));
-        ChessPosition pos2 = new ChessPosition(Integer.parseInt(params[2]),Integer.parseInt(params[3]));
+        ChessPosition pos = paramToPos(params[0]);
+        ChessPosition pos2 = paramToPos(params[1]);
+        if(pos==null || pos2==null){
+            throw new ResponseException(400,"Expected: move <COL><ROW> <COL><ROW>");
+        }
         ws.makeMove(authToken,gameID, new ChessMove(pos,pos2));
         return "";
     }
@@ -181,9 +211,15 @@ public class GameplayClient implements Client, ServerMessageObserver {
                 throw new RuntimeException(e);
             }
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
-            System.out.println(RESET_TEXT_COLOR+((NotificationMessage)message).getMessage());
+            System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_BLUE+((NotificationMessage)message).getMessage()+RESET_TEXT_COLOR);
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
-            System.out.println(RESET_TEXT_COLOR+SET_BG_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);
+            try {
+                ws=new WebSocketCommunicator(url,this);
+                leave();
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);
         }
         System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
