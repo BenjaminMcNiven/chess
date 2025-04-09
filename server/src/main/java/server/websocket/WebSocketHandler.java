@@ -2,7 +2,9 @@ package server.websocket;
 
 import com.google.gson.Gson;
 import commands.UserGameCommand;
-import exception.ResponseException;
+import dataaccess.*;
+import messages.LoadGameMessage;
+import messages.NotificationMessage;
 import messages.ServerMessage;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -13,22 +15,33 @@ import java.io.IOException;
 @WebSocket
 public class WebSocketHandler {
 
+    private final AuthDAO authDAO;
+    private final UserDAO userDAO;
+    private final GameDAO gameDAO;
     private final ConnectionManager connections = new ConnectionManager();
+
+    public WebSocketHandler() {
+        this.authDAO = new MySqlAuthDAO();
+        this.userDAO = new MySqlUserDAO();
+        this.gameDAO = new MySqlGameDAO();
+    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
-            case CONNECT -> connect(command.getAuthToken(),session);
-            case MAKE_MOVE -> makeMove();
-            case LEAVE -> leave();
-            case RESIGN -> resign();
+            case CONNECT -> connect(command.getAuthToken(), command.getGameID(), session);
+//            case MAKE_MOVE -> makeMove();
+//            case LEAVE -> leave();
+//            case RESIGN -> resign();
         }
     }
 
-    private void connect(String visitorName, Session session) throws IOException {
+    private void connect(String authToken, int gameID, Session session) throws IOException {
+        LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameDAO.getGame(gameID).game());
+        String visitorName=authDAO.getAuth(authToken).username();
         connections.add(visitorName, session);
-        var message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" joined the game");
         connections.broadcast(visitorName, message);
     }
 

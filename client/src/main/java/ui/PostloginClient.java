@@ -101,7 +101,6 @@ public class PostloginClient implements Client{
             throw new ResponseException(400,"Expected: observe <ID>");
         }
         if(state==State.SIGNEDIN) {
-//        Insert logic to switch to gameplay client/drawBoard interface
             server.observe(Integer.parseInt(input[0]));
             state=State.OBSERVE;
             return "Viewing Game "+server.getGameMap().get(Integer.parseInt(input[0])).gameName();

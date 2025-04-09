@@ -4,19 +4,27 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import com.google.gson.Gson;
 import exception.ResponseException;
-import facade.HttpCommmunicator;
+import messages.LoadGameMessage;
+import messages.ServerMessage;
+import websocket.ServerMessageObserver;
+import websocket.WebSocketCommunicator;
 
 import static ui.EscapeSequences.*;
 
-public class GameplayClient implements Client{
+public class GameplayClient implements Client, ServerMessageObserver {
 
     private State state;
-    private final HttpCommmunicator server;
+    private final WebSocketCommunicator ws;
+    private final String authToken;
+    private final int gameID;
 
-    public GameplayClient(HttpCommmunicator server, State state) {
-        this.server = server;
+    public GameplayClient(String url, State state, String authToken, int gameID) throws ResponseException {
+        ws=new WebSocketCommunicator(url,this);
         this.state=state;
+        this.authToken = authToken;
+        this.gameID = gameID;
     }
 
     @Override
@@ -35,10 +43,12 @@ public class GameplayClient implements Client{
             var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             return switch (cmd) {
-                case "redraw" -> redraw();
-                case "exit" -> exit();
-                case "highlight" -> redraw();
-                case "logout" -> logout();
+//                case "redraw" -> redraw();
+//                case "exit" -> exit();
+//                case "highlight" -> highlight();
+//                case "move" -> makeMove();
+//                case "resign" -> resign();
+                case "leave" -> leave();
                 case "quit" -> "Quitting";
                 default -> help();
             };
@@ -52,12 +62,12 @@ public class GameplayClient implements Client{
         return state;
     }
 
-    public String redraw() throws ResponseException {
+    public String draw(ChessBoard board) throws ResponseException {
         String header=drawHeaders();
-        String board=drawBoard(server.getActiveGame().game().getBoard());
-        return header+board+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
+        String drawnBoard=drawBoard(board);
+        return header+drawnBoard+header.replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
-
+    // TODO: Add highlight feature
     private String drawBoard(ChessBoard board) throws ResponseException {
         StringBuilder result = new StringBuilder();
         int reversed = state.equals(State.WHITE) || state.equals(State.OBSERVE) ? 1 : -1;
@@ -115,8 +125,12 @@ public class GameplayClient implements Client{
         return SET_TEXT_BOLD+SET_BG_COLOR_DARK_GREEN + "    h  g  f  e  d  c  b  a    " + RESET_BG_COLOR + "\n";
     }
 
-    public String logout() throws ResponseException {
-        server.logoutUser();
+    public void connect() throws ResponseException {
+        ws.connect(authToken, gameID);;
+    }
+
+    public String leave() throws ResponseException {
+        ws.leave(authToken,gameID);
         state = State.SIGNEDOUT;
         return "Logged out. Type help for more assistance";
     }
@@ -126,4 +140,10 @@ public class GameplayClient implements Client{
         return "Exited Game. Type help for more assistance";
     }
 
+    @Override
+    public void notify(ServerMessage message) {
+        if(message.getServerMessageType()== ServerMessage.ServerMessageType.LOAD_GAME){
+            ChessBoard board=((LoadGameMessage)message).getGame().getBoard();
+        }
+    }
 }

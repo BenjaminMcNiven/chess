@@ -1,24 +1,24 @@
 package ui;
 
 import facade.HttpCommmunicator;
-import messages.ServerMessage;
-import websocket.ServerMessageObserver;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class REPL implements ServerMessageObserver {
+public class REPL {
 
     private Client client;
     private final HttpCommmunicator server;
     private final State obs=State.OBSERVE;
     private final State bl=State.BLACK;
     private final State w=State.WHITE;
+    private final String url;
 
     public REPL(String serverUrl) {
         server=new HttpCommmunicator(serverUrl);
         client = new PreloginClient(server);
+        url=serverUrl;
     }
 
     public void run() {
@@ -39,8 +39,8 @@ public class REPL implements ServerMessageObserver {
                     client=new PreloginClient(server);
                 }
                 else if((client.getState()==obs ||client.getState()==w ||client.getState()==bl) && client.getClass()!=GameplayClient.class){
-                    client=new GameplayClient(server,client.getState());
-                    System.out.println(((GameplayClient)client).redraw());
+                    client=new GameplayClient(url,client.getState(),server.getAuthToken(), server.getActiveGame().gameID());
+                    ((GameplayClient)client).connect();
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -51,10 +51,5 @@ public class REPL implements ServerMessageObserver {
 
     private void printPrompt() {
         System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
-    }
-
-    @Override
-    public void notify(ServerMessage message) {
-        //Logic for notify here
     }
 }

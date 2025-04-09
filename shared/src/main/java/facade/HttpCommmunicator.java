@@ -104,6 +104,10 @@ public class HttpCommmunicator {
         throw new ResponseException(400,"No Active Game");
     }
 
+    public String getAuthToken() {
+        return authToken;
+    }
+
     public void createGame(String gameName) throws ResponseException {
         if(authToken!=null){
             GameData newGame = new GameData(null,null,null,gameName,null);
