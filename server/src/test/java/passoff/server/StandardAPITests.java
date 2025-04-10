@@ -153,6 +153,7 @@ public class StandardAPITests {
         //second logout should fail
         serverFacade.logout(existingAuth);
         TestResult result = serverFacade.logout(existingAuth);
+        assertHttpUnauthorized(result);
     }
 
     @Test
