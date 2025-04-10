@@ -65,6 +65,12 @@ public class WebSocketHandler {
             throw new RuntimeException("Game does not Exist");
         }
         String visitorName=authDAO.getAuth(authToken).username();
+        if(visitorName.equals(gameData.whiteUsername())){
+            throw new RuntimeException("Already logged into the game as WHITE");
+        }
+        if(visitorName.equals(gameData.blackUsername())){
+            throw new RuntimeException("Already logged into the game as BLACK");
+        }
         connections.add(visitorName, session,gameID);
         LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData.game());
         session.getRemote().sendString(new Gson().toJson(lgm));
@@ -77,15 +83,11 @@ public class WebSocketHandler {
     private void leave(String authToken, int gameID) throws IOException {
         String visitorName=authDAO.getAuth(authToken).username();
         GameData game=gameDAO.getGame(gameID);
-        ChessGame.TeamColor color=getColor(authToken, gameID);
-        if(color==ChessGame.TeamColor.WHITE){
-            if(visitorName.equals(game.whiteUsername())){
-                gameDAO.updateGame(new GameData(game.gameID(),null,game.blackUsername(),game.gameName(),game.game()));
-            }
-        }else{
-            if(visitorName.equals(game.blackUsername())){
+        if(visitorName.equals(game.whiteUsername())){
+            gameDAO.updateGame(new GameData(game.gameID(),null,game.blackUsername(),game.gameName(),game.game()));
+        }
+        if(visitorName.equals(game.blackUsername())){
                 gameDAO.updateGame(new GameData(game.gameID(),game.whiteUsername(),null,game.gameName(),game.game()));
-            }
         }
         var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" left the game");
         connections.broadcast(visitorName, message);
