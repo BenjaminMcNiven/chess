@@ -3,7 +3,6 @@ package ui;
 import chess.*;
 import exception.ResponseException;
 import websocket.ServerMessageObserver;
-import websocket.WebSocketCommunicator;
 import websocket.messages.*;
 
 import java.util.Arrays;

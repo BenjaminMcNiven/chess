@@ -1,11 +1,14 @@
-package websocket;
+package ui;
 
 import chess.ChessMove;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import websocket.ServerMessageObserver;
+import websocket.commands.HighlightCommand;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
 import websocket.messages.*;
-import websocket.commands.*;
 
 import javax.websocket.*;
 import java.io.IOException;

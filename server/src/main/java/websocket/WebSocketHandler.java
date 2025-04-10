@@ -4,15 +4,16 @@ import chess.*;
 import com.google.gson.Gson;
 import model.AuthData;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
-import websocket.commands.HighlightCommand;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
 import dataaccess.*;
-import websocket.messages.*;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import websocket.commands.HighlightCommand;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
+import websocket.messages.*;
+
 import java.io.IOException;
 
 
