@@ -6,7 +6,7 @@ import model.GameData;
 import model.UserData;
 import spark.*;
 import service.*;
-import websocketServer.WebSocketHandler;
+import websocketserver.WebSocketHandler;
 
 import java.util.Map;
 import java.util.Objects;

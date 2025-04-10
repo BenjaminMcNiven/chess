@@ -1,4 +1,4 @@
-package websocketServer;
+package websocketserver;
 
 import chess.*;
 import com.google.gson.Gson;
