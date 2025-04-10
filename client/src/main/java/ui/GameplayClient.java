@@ -234,7 +234,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
                 System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+"Timed out, attempting to reconnect\n"+RESET_TEXT_COLOR);
                 try {
                     ws=new WebSocketCommunicator(url,this);
-                    System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+"Reconnected.\n"+RESET_TEXT_COLOR);
+                    System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+"Reconnected. \n"+RESET_TEXT_COLOR);
                 } catch (ResponseException e) {
                     throw new RuntimeException(e);
                 }
