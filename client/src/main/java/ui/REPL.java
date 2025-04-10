@@ -31,7 +31,9 @@ public class REPL{
             String line = scanner.nextLine();
             try {
                 result = client.eval(line);
-                System.out.println(SET_TEXT_COLOR_BLUE + result + RESET_TEXT_COLOR );
+                if (!result.isEmpty()) {
+                    System.out.println(SET_TEXT_COLOR_BLUE + result + RESET_TEXT_COLOR );
+                }
                 if(client.getState()==State.SIGNEDIN && client.getClass()!=PostloginClient.class){
                     client=new PostloginClient(server);
                 }

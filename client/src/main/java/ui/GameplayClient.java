@@ -39,7 +39,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
                 redraw - Redraw the board
                 highlight <ROW> <COL> = to highlight the valid moves from a piece
                 leave - to exit the game
-                move <ROW1> <COL1> <ROW2> <COL2> - to make a move
+                move <ROW1><COL1> <ROW2><COL2> <PROMOTION>- to make a move, ie move a7 a8 QUEEN
                 resign - to resign the game
                 help - to see possible commands
                 quit - to exit""";
@@ -199,15 +199,29 @@ public class GameplayClient implements Client, ServerMessageObserver {
 
     public String makeMove(String[] params) throws ResponseException {
         if(params.length<2){
-            throw new ResponseException(400,"Expected: move <COL><ROW> <COL><ROW>");
+            throw new ResponseException(400,"Expected: move <ROW1><COL1> <ROW2><COL2> <PROMOTION>");
         }
         ChessPosition pos = paramToPos(params[0]);
         ChessPosition pos2 = paramToPos(params[1]);
         if(pos==null || pos2==null){
-            throw new ResponseException(400,"Expected: move <COL><ROW> <COL><ROW>");
+            throw new ResponseException(400,"Expected: move <ROW1><COL1> <ROW2><COL2> <PROMOTION>");
         }
-        ws.makeMove(authToken,gameID, new ChessMove(pos,pos2));
-        return "";
+        ChessPiece.PieceType promotePiece = null;
+        if(params.length==3){
+            promotePiece= switch (params[2]){
+                case "PAWN" -> ChessPiece.PieceType.PAWN;
+                case "ROOK" -> ChessPiece.PieceType.ROOK;
+                case "KNIGHT" -> ChessPiece.PieceType.KNIGHT;
+                case "BISHOP" -> ChessPiece.PieceType.BISHOP;
+                case "QUEEN" -> ChessPiece.PieceType.QUEEN;
+                default -> null;
+            };
+            if(promotePiece==null){
+                throw new ResponseException(400,"Expected: move <COL><ROW> <COL><ROW>");
+            }
+        }
+        ws.makeMove(authToken,gameID, new ChessMove(pos,pos2,promotePiece));
+        return ERASE_LINE;
     }
 
 
