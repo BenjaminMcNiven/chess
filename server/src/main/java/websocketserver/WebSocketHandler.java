@@ -65,12 +65,6 @@ public class WebSocketHandler {
             throw new RuntimeException("Game does not Exist");
         }
         String visitorName=authDAO.getAuth(authToken).username();
-        if(visitorName.equals(gameData.whiteUsername())){
-            throw new RuntimeException("Already logged into the game as WHITE");
-        }
-        if(visitorName.equals(gameData.blackUsername())){
-            throw new RuntimeException("Already logged into the game as BLACK");
-        }
         connections.add(visitorName, session,gameID);
         LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData.game());
         session.getRemote().sendString(new Gson().toJson(lgm));

@@ -121,8 +121,8 @@ public class HttpCommmunicator {
 
     public void joinGame(String color, int gameID) throws ResponseException {
         if(authToken!=null) {
-            if(gameMap==null){
-                throw new ResponseException(500, "Games not yet listed! List the games to find a game to join");
+            if(username.equals(gameMap.get(gameID).blackUsername()) || username.equals(gameMap.get(gameID).whiteUsername())){
+                throw new ResponseException(500, "You have already joined that game");
             }
             if(color.equals("BLACK")? username.equals(gameMap.get(gameID).blackUsername()): username.equals(gameMap.get(gameID).whiteUsername())){
                 activeGame=gameID;

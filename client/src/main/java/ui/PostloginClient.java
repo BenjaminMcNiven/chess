@@ -89,6 +89,9 @@ public class PostloginClient implements Client{
         if(input.length!=2 || isNotInteger(input[0]) || !input[1].equalsIgnoreCase("WHITE") && !input[1].equalsIgnoreCase("BLACK")){
             throw new ResponseException(400,"Expected: join <ID> WHITE|BLACK");
         }
+        else if(server.getGameMap()==null){
+            throw new ResponseException(400, "Games not yet listed! List the games to find a game to join");
+        }
         else if(!server.getGameMap().containsKey(Integer.parseInt(input[0]))){
             throw new ResponseException(400, "Game ID does not exist");
         }
@@ -98,7 +101,7 @@ public class PostloginClient implements Client{
                 state=input[1].equalsIgnoreCase("WHITE")? State.WHITE: State.BLACK;
                 return "Successfully joined game " + input[0];
             } catch (ResponseException e) {
-                throw new RuntimeException("Failed to claim that color. Color already taken");
+                throw new RuntimeException(e.getMessage());
             }
         }
         throw new ResponseException(400,"Unauthorized");
