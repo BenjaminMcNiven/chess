@@ -15,7 +15,8 @@ public class PostloginClient implements Client{
 
     private State state;
     private final HttpCommmunicator server;
-    private final Map<ChessState, String> stateMessage = Map.of(WHITEWIN, "White Won", BLACKWIN, "Black Won", STALE, "Stalemate", WHITERESIGN, "Black Won", BLACKRESIGN, "White Won");
+    private final Map<ChessState, String> stateMessage = Map.of(WHITEWIN, "White Won", BLACKWIN, "Black Won", STALE,
+            "Stalemate", WHITERESIGN, "Black Won", BLACKRESIGN, "White Won");
 
     public PostloginClient(HttpCommmunicator server) {
         this.server = server;

@@ -82,12 +82,13 @@ public class PreloginClient implements Client {
         Scanner scanner=new Scanner(System.in);
         System.out.println("Admin Password: ");
         String password= scanner.nextLine();
-        if(password.equals("clearAdminPassword"))
+        if(password.equals("clearAdminPassword")) {
             try {
                 server.clearDatabase();
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }
+        }
         return "Cleared";
     }
 
