@@ -179,7 +179,7 @@ public class WebSocketHandler {
         );
         String startPos=numbertoLetter.get(move.getStartPosition().getColumn())+move.getStartPosition().getRow();
         String endPos=numbertoLetter.get(move.getEndPosition().getColumn())+move.getEndPosition().getRow();
-        return startPos+" -> "+endPos+(move.getPromotionPiece()!=null? " Promoted: "+move.getPromotionPiece(): "");
+        return startPos+" -> "+endPos+(move.getPromotionPiece()!=null? " and promoted to "+move.getPromotionPiece(): "");
     }
 
     private void resign(String authToken, int gameID, Session session) throws IOException{

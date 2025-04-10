@@ -221,7 +221,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
             }
         }
         ws.makeMove(authToken,gameID, new ChessMove(pos,pos2,promotePiece));
-        return ERASE_LINE;
+        return "";
     }
 
 
