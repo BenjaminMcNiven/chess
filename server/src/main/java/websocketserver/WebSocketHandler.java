@@ -15,6 +15,7 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 @WebSocket
@@ -137,7 +138,7 @@ public class WebSocketHandler {
         LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,newGame.game());
         session.getRemote().sendString(new Gson().toJson(lgm));
         connections.broadcast(visitorName,lgm);
-        var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" made the move "+move);
+        var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" made the move "+printMove(move));
         connections.broadcast(visitorName, message);
         switch(game.getState()){
             case STALE ->{
@@ -169,6 +170,16 @@ public class WebSocketHandler {
             }
         }
 
+    }
+
+    private String printMove(ChessMove move) {
+        Map<Integer,String> numbertoLetter = Map.of(
+                1,"a", 2, "b", 3, "c", 4, "d", 5,
+                "e", 6, "f", 7, "g", 8, "h"
+        );
+        String startPos=numbertoLetter.get(move.getStartPosition().getColumn())+move.getStartPosition().getRow();
+        String endPos=numbertoLetter.get(move.getEndPosition().getColumn())+move.getEndPosition().getRow();
+        return startPos+" -> "+endPos+(move.getPromotionPiece()!=null? " Promoted: "+move.getPromotionPiece(): "");
     }
 
     private void resign(String authToken, int gameID, Session session) throws IOException{
