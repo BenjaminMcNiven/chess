@@ -26,6 +26,14 @@ public class GameplayClient implements Client, ServerMessageObserver {
         this.state=state;
         this.authToken = authToken;
         this.gameID = gameID;
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                leave();
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 
     @Override
@@ -164,6 +172,9 @@ public class GameplayClient implements Client, ServerMessageObserver {
     }
 
     public String highlight(String[] params) throws ResponseException {
+        if(params.length<1){
+            throw new ResponseException(400,"Expected: highlight <COL><ROW>");
+        }
         ChessPosition pos=paramToPos(params[0]);
         if(pos==null){
             throw new ResponseException(400,"Expected: highlight <COL><ROW>");
@@ -187,6 +198,9 @@ public class GameplayClient implements Client, ServerMessageObserver {
     }
 
     public String makeMove(String[] params) throws ResponseException {
+        if(params.length<2){
+            throw new ResponseException(400,"Expected: move <COL><ROW> <COL><ROW>");
+        }
         ChessPosition pos = paramToPos(params[0]);
         ChessPosition pos2 = paramToPos(params[1]);
         if(pos==null || pos2==null){
@@ -215,7 +229,6 @@ public class GameplayClient implements Client, ServerMessageObserver {
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
             try {
                 ws=new WebSocketCommunicator(url,this);
-                leave();
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }

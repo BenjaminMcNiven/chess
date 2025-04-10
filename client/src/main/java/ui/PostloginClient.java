@@ -67,7 +67,7 @@ public class PostloginClient implements Client{
             StringBuilder gamesList= new StringBuilder("Games:");
             HashMap<Integer, GameData> gamesMap= server.listGames();
             gamesMap.forEach((key,value)-> {
-                gamesList.append("\n   ").append(key).append(": ").append(value.gameName());
+                gamesList.append("\n   ").append(key).append(": ").append(value.gameName()).append(" - ").append(value.game().getState());
                 gamesList.append("\n      ").append("WHITE: ").append(value.whiteUsername() != null ? value.whiteUsername() : "Not claimed");
                 gamesList.append("\n      ").append("BLACK: ").append(value.blackUsername() != null ? value.blackUsername() : "Not claimed");
             });
