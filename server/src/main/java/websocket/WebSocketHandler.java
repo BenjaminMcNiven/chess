@@ -66,7 +66,9 @@ public class WebSocketHandler {
         connections.add(visitorName, session,gameID);
         LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,gameData.game());
         session.getRemote().sendString(new Gson().toJson(lgm));
-        var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,visitorName+" joined the game");
+        ChessGame.TeamColor color=getColor(authToken,gameID);
+        String mess=visitorName+" joined the game as "+ (color==null? "observer ": String.valueOf(color));
+        var message = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,mess);
         connections.broadcast(visitorName, message);
     }
 
@@ -97,8 +99,8 @@ public class WebSocketHandler {
             throw new RuntimeException("Game does not Exist");
         }
         ChessGame game=gameData.game();
-        if(game.getState()!=ChessState.PLAY){
-            throw new RuntimeException("Game is already over");
+        if(game.getState()!=ChessState.PLAY || game.getState()!=ChessState.BLACKCHECK || game.getState()!=ChessState.WHITECHECK){
+            throw new InvalidMoveException("Game is already over");
         }
         String visitorName=authDAO.getAuth(authToken).username();
         if(visitorName.equals(gameData.blackUsername())&&game.getTeamTurn()!=ChessGame.TeamColor.BLACK){
@@ -124,12 +126,12 @@ public class WebSocketHandler {
                 connections.broadcast(visitorName, res);
                 session.getRemote().sendString(new Gson().toJson(res));
             }
-            case WHITE ->{
+            case WHITEWIN ->{
                 var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! White wins!");
                 connections.broadcast(visitorName, res);
                 session.getRemote().sendString(new Gson().toJson(res));
             }
-            case BLACK ->{
+            case BLACKWIN ->{
                 var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! Black wins!");
                 connections.broadcast(visitorName, res);
                 session.getRemote().sendString(new Gson().toJson(res));
@@ -148,12 +150,15 @@ public class WebSocketHandler {
         if(!visitorName.equals(gameData.whiteUsername()) && !visitorName.equals(gameData.blackUsername())){
             throw new RuntimeException("You are an observer");
         }
+        if(game.getState()!=ChessState.PLAY || game.getState()!=ChessState.WHITECHECK || game.getState()!=ChessState.BLACKCHECK){
+            throw new RuntimeException("You are an observer");
+        }
         if(game.getState()==ChessState.PLAY){
             ChessGame.TeamColor color=getColor(authToken,gameID);
             if(color==ChessGame.TeamColor.WHITE){
-                game.setState(ChessState.WR);
+                game.setState(ChessState.WHITERESIGN);
             }else{
-                game.setState(ChessState.BR);
+                game.setState(ChessState.BLACKRESIGN);
             }
             gameDAO.updateGame(new GameData(gameData.gameID(),gameData.whiteUsername(),gameData.blackUsername(),gameData.gameName(),game));
         }
