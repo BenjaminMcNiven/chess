@@ -2,9 +2,11 @@ package chess;
 
 public enum ChessState {
     PLAY,
-    WHITE,
-    BLACK,
+    WHITEWIN,
+    BLACKWIN,
     STALE,
-    WR,
-    BR
+    WHITERESIGN,
+    BLACKRESIGN,
+    WHITECHECK,
+    BLACKCHECK
 }

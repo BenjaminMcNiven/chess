@@ -167,6 +167,9 @@ public class ChessGame implements Cloneable{
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if(state!=ChessState.PLAY && state!=ChessState.WHITECHECK && state!=ChessState.BLACKCHECK){
+            throw new InvalidMoveException("Game already over");
+        }
         if(board.getPiece(move.getStartPosition())==null || currentTurn!=board.getPiece(move.getStartPosition()).getTeamColor()){
             throw new InvalidMoveException("Invalid Move attempted");
         }
@@ -234,18 +237,24 @@ public class ChessGame implements Cloneable{
             lastMove=move;
             if(currentTurn==TeamColor.WHITE){
                 if(isInCheckmate(TeamColor.BLACK)){
-                    state=ChessState.WHITE;
+                    state=ChessState.WHITEWIN;
                 }
-                if(isInStalemate(TeamColor.BLACK)){
+                else if(isInStalemate(TeamColor.BLACK)){
                     state=ChessState.STALE;
+                }else if(isInCheck(TeamColor.BLACK)){
+                    state=ChessState.BLACKCHECK;
                 }
                 currentTurn=TeamColor.BLACK;
-            }else {currentTurn=TeamColor.WHITE;
+            }else {
                 if(isInCheckmate(TeamColor.WHITE)){
-                    state=ChessState.BLACK;
-                }if(isInStalemate(TeamColor.WHITE)){
+                    state=ChessState.BLACKWIN;
+                }else if(isInStalemate(TeamColor.WHITE)){
                     state=ChessState.STALE;
-                }}
+                }else if(isInCheck(TeamColor.WHITE)){
+                    state=ChessState.WHITECHECK;
+                }
+                currentTurn=TeamColor.WHITE;
+            }
         } catch (Exception e) {
             throw new InvalidMoveException(e.getMessage());
         }

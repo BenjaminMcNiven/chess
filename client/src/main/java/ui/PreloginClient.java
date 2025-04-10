@@ -5,6 +5,7 @@ import model.UserData;
 import facade.HttpCommmunicator;
 
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class PreloginClient implements Client {
 
@@ -35,6 +36,7 @@ public class PreloginClient implements Client {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "quit" -> "Quitting";
+                case "clear" ->clear();
                 default -> help();
             };
         } catch (Exception e) {
@@ -74,6 +76,19 @@ public class PreloginClient implements Client {
             }
         }
         throw new ResponseException(400, "Expected login <USERNAME> <PASSWORD>");
+    }
+
+    public String clear(){
+        Scanner scanner=new Scanner(System.in);
+        System.out.println("Admin Password: ");
+        String password= scanner.nextLine();
+        if(password.equals("clearAdminPassword"))
+            try {
+                server.clearDatabase();
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
+        return "Cleared";
     }
 
     public State getState(){
