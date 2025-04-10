@@ -29,9 +29,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 leave();
-            } catch (ResponseException e) {
-                throw new RuntimeException(e);
-            }
+            } catch (Exception _) {}
         }));
     }
 
@@ -60,7 +58,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
                 case "move" -> makeMove(params);
                 case "resign" ->resign();
                 case "leave" -> leave();
-                case "quit" -> leave()+"Quitting";
+                case "quit" -> leave()+"\nQuitting";
                 default -> help();
             };
         } catch (Exception e) {
@@ -193,7 +191,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
         if(!letterToNumber.containsKey(param.charAt(0))){
             return null;
         }
-        if(param.charAt(1) <= '1' && param.charAt(1) >= '8'){
+        if(param.charAt(1) < '1' || param.charAt(1) > '8'){
             return null;
         }
         return new ChessPosition(Integer.parseInt(String.valueOf(param.charAt(1))),letterToNumber.get(param.charAt(0)));

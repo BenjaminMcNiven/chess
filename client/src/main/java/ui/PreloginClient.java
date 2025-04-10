@@ -85,11 +85,12 @@ public class PreloginClient implements Client {
         if(password.equals("clearAdminPassword")) {
             try {
                 server.clearDatabase();
+                return "Cleared";
             } catch (ResponseException e) {
                 throw new RuntimeException(e);
             }
         }
-        return "Cleared";
+        return "Wrong Password";
     }
 
     public State getState(){
