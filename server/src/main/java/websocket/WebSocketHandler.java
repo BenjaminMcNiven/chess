@@ -35,7 +35,7 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException, InvalidMoveException {
+    public void onMessage(Session session, String message) throws IOException {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         switch (command.getCommandType()) {
             case CONNECT -> connect(command.getAuthToken(), command.getGameID(), session);
@@ -90,7 +90,7 @@ public class WebSocketHandler {
         connections.remove(visitorName);
     }
 
-    private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException, InvalidMoveException {
+    private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws IOException {
         if(unauthorized(authToken)){
             ErrorMessage errorMessage=new ErrorMessage(ServerMessage.ServerMessageType.ERROR,"Unauthorized to join game");
             session.getRemote().sendString(new Gson().toJson(errorMessage));
@@ -124,7 +124,13 @@ public class WebSocketHandler {
             session.getRemote().sendString(new Gson().toJson(errorMessage));
             return;
         }
-        game.makeMove(move);
+        try {
+            game.makeMove(move);
+        } catch (InvalidMoveException e) {
+            ErrorMessage errorMessage=new ErrorMessage(ServerMessage.ServerMessageType.ERROR,e.getMessage());
+            session.getRemote().sendString(new Gson().toJson(errorMessage));
+            return;
+        }
         GameData newGame=new GameData(gameData.gameID(),gameData.whiteUsername(),gameData.blackUsername(),gameData.gameName(),game);
         gameDAO.updateGame(newGame);
         LoadGameMessage lgm=new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME,newGame.game());
@@ -149,6 +155,16 @@ public class WebSocketHandler {
                 connections.broadcast(visitorName, res);
                 var mess = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Game Over! You win!");
                 session.getRemote().sendString(new Gson().toJson(mess));
+            }
+            case BLACKCHECK -> {
+                var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"Black is in Check!");
+                connections.broadcast(visitorName, res);
+                session.getRemote().sendString(new Gson().toJson(res));
+            }
+            case WHITECHECK -> {
+                var res = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION,"White is in Check!");
+                connections.broadcast(visitorName, res);
+                session.getRemote().sendString(new Gson().toJson(res));
             }
         }
 

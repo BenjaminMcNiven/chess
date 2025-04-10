@@ -11,9 +11,9 @@ public class LogoutService extends AuthenticatedService{
     }
 
     public void logout(String authToken) throws DataAccessException {
-        if(unauthorized(authToken)){
-            throw new DataAccessException("Error: unauthorized");
-        }
+//        if(unauthorized(authToken)){
+//            throw new DataAccessException("Error: unauthorized");
+//        }
         authDAO.deleteAuth(authToken);
     }
 }

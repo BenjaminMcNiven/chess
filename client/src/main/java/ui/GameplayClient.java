@@ -77,7 +77,7 @@ public class GameplayClient implements Client, ServerMessageObserver {
     public String draw(ChessGame game, ChessPosition highlightPos) throws ResponseException {
         String header=drawHeaders();
         String drawnBoard=drawBoard(game, highlightPos);
-        return ERASE_SCREEN+header+drawnBoard+(header).replace("\n","")+RESET_TEXT_BOLD_FAINT;
+        return header+drawnBoard+(header).replace("\n","")+RESET_TEXT_BOLD_FAINT;
     }
 
     private String drawBoard(ChessGame game, ChessPosition highlightPos){
@@ -188,6 +188,9 @@ public class GameplayClient implements Client, ServerMessageObserver {
                 'a', 1, 'b', 2, 'c', 3, 'd', 4,
                 'e', 5, 'f', 6, 'g', 7, 'h', 8
         );
+        if(param.length()!=2){
+            return null;
+        }
         if(!letterToNumber.containsKey(param.charAt(0))){
             return null;
         }
@@ -227,12 +230,16 @@ public class GameplayClient implements Client, ServerMessageObserver {
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.NOTIFICATION){
             System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_BLUE+((NotificationMessage)message).getMessage()+RESET_TEXT_COLOR);
         } else if (message.getServerMessageType()== ServerMessage.ServerMessageType.ERROR){
-            try {
-                ws=new WebSocketCommunicator(url,this);
-            } catch (ResponseException e) {
-                throw new RuntimeException(e);
+            if(((ErrorMessage)message).getErrorMessage().contains("Timeout")){
+                System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+"Timed out, attempting to reconnect\n"+RESET_TEXT_COLOR);
+                try {
+                    ws=new WebSocketCommunicator(url,this);
+                } catch (ResponseException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);
+            else{System.out.println(RESET_TEXT_COLOR+SET_TEXT_COLOR_RED+((ErrorMessage)message).getErrorMessage()+RESET_TEXT_COLOR);}
+
         }
         System.out.print(RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }

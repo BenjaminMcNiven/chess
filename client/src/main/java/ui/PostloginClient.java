@@ -1,16 +1,21 @@
 package ui;
 
+import chess.ChessState;
 import exception.ResponseException;
 import model.GameData;
 import facade.HttpCommmunicator;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+
+import static chess.ChessState.*;
 
 public class PostloginClient implements Client{
 
     private State state;
     private final HttpCommmunicator server;
+    private final Map<ChessState, String> stateMessage = Map.of(WHITEWIN, "White Won", BLACKWIN, "Black Won", STALE, "Stalemate", WHITERESIGN, "Black Won", BLACKRESIGN, "White Won");
 
     public PostloginClient(HttpCommmunicator server) {
         this.server = server;
@@ -67,7 +72,9 @@ public class PostloginClient implements Client{
             StringBuilder gamesList= new StringBuilder("Games:");
             HashMap<Integer, GameData> gamesMap= server.listGames();
             gamesMap.forEach((key,value)-> {
-                gamesList.append("\n   ").append(key).append(": ").append(value.gameName()).append(" - ").append(value.game().getState());
+                ChessState state=value.game().getState();
+                String printState= state==PLAY||state==WHITECHECK||state==BLACKCHECK? value.game().getTeamTurn()+"'s turn": stateMessage.get(state);
+                gamesList.append("\n   ").append(key).append(": ").append(value.gameName()).append(" - ").append(printState);
                 gamesList.append("\n      ").append("WHITE: ").append(value.whiteUsername() != null ? value.whiteUsername() : "Not claimed");
                 gamesList.append("\n      ").append("BLACK: ").append(value.blackUsername() != null ? value.blackUsername() : "Not claimed");
             });

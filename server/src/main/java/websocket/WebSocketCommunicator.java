@@ -26,7 +26,6 @@ public class WebSocketCommunicator extends Endpoint {
             this.serverMessageObserver = serverMessageObserver;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            container.setDefaultMaxSessionIdleTimeout(1_000_000); // Extend idle timeout
             this.session = container.connectToServer(this, socketURI);
 
             //set message handler
@@ -79,6 +78,7 @@ public class WebSocketCommunicator extends Endpoint {
         try {
             var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
+            session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         }

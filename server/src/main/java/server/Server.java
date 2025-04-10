@@ -110,6 +110,7 @@ public class Server {
         try{
             LogoutService service=new LogoutService(authDAO);
             service.logout(authToken);
+            res.status(200);
             res.body("");
             return res.body();
         } catch (RuntimeException e) {

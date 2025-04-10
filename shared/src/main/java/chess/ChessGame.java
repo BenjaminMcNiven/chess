@@ -235,28 +235,36 @@ public class ChessGame implements Cloneable{
             }
             board.addPiece(move.getStartPosition(),null);
             lastMove=move;
-            if(currentTurn==TeamColor.WHITE){
-                if(isInCheckmate(TeamColor.BLACK)){
-                    state=ChessState.WHITEWIN;
-                }
-                else if(isInStalemate(TeamColor.BLACK)){
-                    state=ChessState.STALE;
-                }else if(isInCheck(TeamColor.BLACK)){
-                    state=ChessState.BLACKCHECK;
-                }
-                currentTurn=TeamColor.BLACK;
-            }else {
-                if(isInCheckmate(TeamColor.WHITE)){
-                    state=ChessState.BLACKWIN;
-                }else if(isInStalemate(TeamColor.WHITE)){
-                    state=ChessState.STALE;
-                }else if(isInCheck(TeamColor.WHITE)){
-                    state=ChessState.WHITECHECK;
-                }
-                currentTurn=TeamColor.WHITE;
-            }
+            updateState();
         } catch (Exception e) {
             throw new InvalidMoveException(e.getMessage());
+        }
+    }
+
+    public void updateState(){
+        if(currentTurn==TeamColor.WHITE){
+            if(isInCheckmate(TeamColor.BLACK)){
+                state=ChessState.WHITEWIN;
+            }
+            else if(isInStalemate(TeamColor.BLACK)){
+                state=ChessState.STALE;
+            }else if(isInCheck(TeamColor.BLACK)){
+                state=ChessState.BLACKCHECK;
+            }else{
+                state=ChessState.PLAY;
+            }
+            currentTurn=TeamColor.BLACK;
+        }else {
+            if(isInCheckmate(TeamColor.WHITE)){
+                state=ChessState.BLACKWIN;
+            }else if(isInStalemate(TeamColor.WHITE)){
+                state=ChessState.STALE;
+            }else if(isInCheck(TeamColor.WHITE)){
+                state=ChessState.WHITECHECK;
+            }else{
+                state=ChessState.PLAY;
+            }
+            currentTurn=TeamColor.WHITE;
         }
     }
 
@@ -336,6 +344,7 @@ public class ChessGame implements Cloneable{
                     ChessGame tempGame;
                     try {
                         tempGame = (ChessGame) this.clone();
+                        tempGame.setTeamTurn(teamColor);
                         tempGame.makeMove(move);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
